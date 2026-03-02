@@ -1,0 +1,37 @@
+[
+    {
+        "name": "home",
+        "label": "Homepage",
+        "fields": ["title", "body", "summary", "featured_image", "seo_title", "seo_description"],
+        "fieldWidths": {
+            "title": 100,
+            "summary": 100,
+            "body": 100,
+            "featured_image": 50,
+            "seo_title": 50,
+            "seo_description": 50
+        },
+        "noChildren": false,
+        "noParents": true,
+        "urlSegments": false,
+        "tags": "core"
+    },
+    {
+        "name": "basic-page",
+        "label": "Basic Page",
+        "fields": ["title", "body", "summary", "featured_image", "images", "seo_title", "seo_description"],
+        "fieldWidths": {
+            "title": 100,
+            "summary": 100,
+            "body": 100,
+            "featured_image": 50,
+            "images": 50,
+            "seo_title": 50,
+            "seo_description": 50
+        },
+        "noChildren": false,
+        "noParents": false,
+        "urlSegments": false,
+        "tags": "core"
+    }
+]

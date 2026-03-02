@@ -1,0 +1,15 @@
+{
+    "name": "pw-starter",
+    "version": "1.0.0",
+    "description": "ProcessWire website starter — frontend build tooling",
+    "private": true,
+    "scripts": {
+        "dev": "tailwindcss -i ./site/assets/src/app.css -o ./site/assets/dist/app.css --watch",
+        "build": "tailwindcss -i ./site/assets/src/app.css -o ./site/assets/dist/app.css --minify"
+    },
+    "devDependencies": {
+        "tailwindcss": "^3.4",
+        "postcss": "^8.4",
+        "autoprefixer": "^10.4"
+    }
+}

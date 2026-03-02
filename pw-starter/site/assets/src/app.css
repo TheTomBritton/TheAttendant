@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Custom base styles and component classes below.
+ * Tailwind utilities should be used directly in templates where possible.
+ * Only add component classes here when reuse across many templates is needed.
+ */
+
+/* ──────────────────────────────────────────────
+   Base styles
+   ────────────────────────────────────────────── */
+
+@layer base {
+    body {
+        @apply text-gray-900 antialiased;
+    }
+
+    a {
+        @apply text-blue-700 underline hover:text-blue-900;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        @apply font-bold leading-tight;
+    }
+}
+
+/* ──────────────────────────────────────────────
+   Component classes (keep minimal — prefer utilities)
+   ────────────────────────────────────────────── */
+
+@layer components {
+    .container {
+        @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+    }
+
+    .btn {
+        @apply inline-block px-6 py-3 bg-blue-700 text-white font-medium no-underline rounded hover:bg-blue-800 transition-colors;
+    }
+
+    .btn-secondary {
+        @apply inline-block px-6 py-3 bg-gray-200 text-gray-900 font-medium no-underline rounded hover:bg-gray-300 transition-colors;
+    }
+
+    /* Screen reader only — visible on focus */
+    .sr-only {
+        @apply absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
+    }
+
+    .sr-only.focus\:not-sr-only:focus {
+        @apply static w-auto h-auto p-2 m-0 overflow-visible whitespace-normal;
+        clip: auto;
+    }
+}

@@ -1,0 +1,26 @@
+[
+    {
+        "name": "about",
+        "title": "About",
+        "template": "basic-page",
+        "parent": "/",
+        "status": "published",
+        "sort": 1,
+        "content": {
+            "summary": "Learn more about us and what we do.",
+            "body": "<p>About page content goes here.</p>"
+        }
+    },
+    {
+        "name": "contact",
+        "title": "Contact",
+        "template": "basic-page",
+        "parent": "/",
+        "status": "published",
+        "sort": 2,
+        "content": {
+            "summary": "Get in touch with us.",
+            "body": "<p>Contact page content goes here.</p>"
+        }
+    }
+]

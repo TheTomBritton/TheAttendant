@@ -1,0 +1,88 @@
+[
+    {
+        "name": "body",
+        "type": "FieldtypeTextarea",
+        "label": "Body Content",
+        "description": "Main page content. Supports rich text formatting.",
+        "required": false,
+        "columnWidth": 100,
+        "tags": "core",
+        "inputfieldClass": "InputfieldCKEditor",
+        "settings": {
+            "rows": 15,
+            "contentType": 1
+        }
+    },
+    {
+        "name": "summary",
+        "type": "FieldtypeTextarea",
+        "label": "Summary",
+        "description": "Brief description used in listings and as default meta description. Keep under 160 characters.",
+        "required": false,
+        "columnWidth": 100,
+        "tags": "core",
+        "settings": {
+            "rows": 3,
+            "maxlength": 300,
+            "contentType": 0
+        }
+    },
+    {
+        "name": "featured_image",
+        "type": "FieldtypeImage",
+        "label": "Featured Image",
+        "description": "Primary image for this page. Used in listings, social sharing, and as the main page image.",
+        "required": false,
+        "columnWidth": 50,
+        "tags": "core",
+        "settings": {
+            "maxFiles": 1,
+            "extensions": "jpg jpeg png gif webp",
+            "maxWidth": 4096,
+            "maxHeight": 4096,
+            "outputFormat": 0
+        }
+    },
+    {
+        "name": "images",
+        "type": "FieldtypeImage",
+        "label": "Image Gallery",
+        "description": "Additional images for this page. Drag to reorder.",
+        "required": false,
+        "columnWidth": 50,
+        "tags": "core",
+        "settings": {
+            "maxFiles": 0,
+            "extensions": "jpg jpeg png gif webp",
+            "maxWidth": 4096,
+            "maxHeight": 4096,
+            "outputFormat": 0
+        }
+    },
+    {
+        "name": "seo_title",
+        "type": "FieldtypeText",
+        "label": "SEO Title",
+        "description": "Custom title for search engines. If blank, the page title is used. Keep under 60 characters.",
+        "required": false,
+        "columnWidth": 50,
+        "tags": "seo",
+        "settings": {
+            "maxlength": 70
+        }
+    },
+    {
+        "name": "seo_description",
+        "type": "FieldtypeTextarea",
+        "label": "SEO Description",
+        "description": "Custom meta description for search engines. If blank, the summary is used. Keep under 160 characters.",
+        "required": false,
+        "columnWidth": 50,
+        "tags": "seo",
+        "settings": {
+            "rows": 2,
+            "maxlength": 170,
+            "contentType": 0
+        }
+    }
+]
