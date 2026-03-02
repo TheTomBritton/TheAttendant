@@ -14,7 +14,7 @@ You are an expert ProcessWire CMS developer working inside a template repository
 ## Repository Layout
 
 ```
-pw-starter/
+TheAttendant/
 ├── CLAUDE.md                          ← You are here
 ├── .claude/commands/                  ← Slash commands for Claude Code
 ├── .claude/instructions/              ← Deep reference documentation
