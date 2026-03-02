@@ -1,5 +1,9 @@
 # ProcessWire Starter
 
+<p align="center">
+  <img src="hero.gif" alt="ProcessWire Starter" width="500">
+</p>
+
 A template repository for rapidly scaffolding ProcessWire websites with Claude Code automation.
 
 ## Quick Start
