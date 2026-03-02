@@ -26,6 +26,12 @@
     <meta property="og:image" content="<?= $page->featured_image->width(1200)->httpUrl ?>">
     <?php endif; ?>
 
+    <!-- RSS feed -->
+    <?php $blogRss = $pages->get('template=blog-rss'); ?>
+    <?php if ($blogRss->id): ?>
+    <link rel="alternate" type="application/rss+xml" title="<?= $site_name ?> Blog" href="<?= $blogRss->httpUrl ?>">
+    <?php endif; ?>
+
     <!-- Styles -->
     <?php
     $cssFile = $config->paths->templates . 'assets/dist/app.css';
@@ -92,6 +98,7 @@
     </footer>
 
     <!-- Scripts -->
+    <script src="<?= $config->urls->templates ?>assets/dist/htmx.min.js" defer></script>
     <?php
     $jsFile = $config->paths->templates . 'assets/dist/app.js';
     if (file_exists($jsFile)):

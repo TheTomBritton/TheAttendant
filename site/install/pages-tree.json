@@ -7,20 +7,122 @@
         "status": "published",
         "sort": 1,
         "content": {
-            "summary": "Learn more about us and what we do.",
+            "summary": "Learn more about Sound M8 and what we do.",
             "body": "<p>About page content goes here.</p>"
         }
     },
     {
-        "name": "contact",
-        "title": "Contact",
-        "template": "basic-page",
+        "name": "blog",
+        "title": "Blog",
+        "template": "blog-index",
         "parent": "/",
         "status": "published",
         "sort": 2,
         "content": {
-            "summary": "Get in touch with us.",
-            "body": "<p>Contact page content goes here.</p>"
+            "summary": "The latest news, reviews, and features from Sound M8.",
+            "body": "<p>Welcome to the Sound M8 blog. Explore our latest articles below.</p>"
+        }
+    },
+    {
+        "name": "blog-categories",
+        "title": "Blog Categories",
+        "template": "basic-page",
+        "parent": "/",
+        "status": "hidden",
+        "sort": 10,
+        "content": {}
+    },
+    {
+        "name": "news",
+        "title": "News",
+        "template": "blog-category",
+        "parent": "/blog-categories/",
+        "status": "published",
+        "sort": 1,
+        "content": {
+            "body": "<p>The latest news and announcements.</p>"
+        }
+    },
+    {
+        "name": "reviews",
+        "title": "Reviews",
+        "template": "blog-category",
+        "parent": "/blog-categories/",
+        "status": "published",
+        "sort": 2,
+        "content": {
+            "body": "<p>In-depth reviews of the latest gear, software, and more.</p>"
+        }
+    },
+    {
+        "name": "features",
+        "title": "Features",
+        "template": "blog-category",
+        "parent": "/blog-categories/",
+        "status": "published",
+        "sort": 3,
+        "content": {
+            "body": "<p>Feature articles, interviews, and deep dives.</p>"
+        }
+    },
+    {
+        "name": "blog-tags",
+        "title": "Blog Tags",
+        "template": "basic-page",
+        "parent": "/",
+        "status": "hidden",
+        "sort": 11,
+        "content": {}
+    },
+    {
+        "name": "blog-authors",
+        "title": "Blog Authors",
+        "template": "basic-page",
+        "parent": "/",
+        "status": "hidden",
+        "sort": 12,
+        "content": {}
+    },
+    {
+        "name": "blog-rss",
+        "title": "Blog RSS Feed",
+        "template": "blog-rss",
+        "parent": "/",
+        "status": "hidden",
+        "sort": 13,
+        "content": {}
+    },
+    {
+        "name": "contact",
+        "title": "Contact",
+        "template": "contact",
+        "parent": "/",
+        "status": "published",
+        "sort": 3,
+        "content": {
+            "summary": "Get in touch with the Sound M8 team.",
+            "body": "<p>Have a question, suggestion, or want to collaborate? Drop us a message using the form below.</p>"
+        }
+    },
+    {
+        "name": "search",
+        "title": "Search",
+        "template": "search",
+        "parent": "/",
+        "status": "hidden",
+        "sort": 14,
+        "content": {}
+    },
+    {
+        "name": "privacy-policy",
+        "title": "Privacy Policy",
+        "template": "basic-page",
+        "parent": "/",
+        "status": "published",
+        "sort": 15,
+        "content": {
+            "summary": "How we handle your data.",
+            "body": "<p>Privacy policy content goes here.</p>"
         }
     }
 ]

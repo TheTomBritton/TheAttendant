@@ -43,6 +43,7 @@ if (!defined('PROCESSWIRE')) {
 
 $installDir = wire('config')->paths->site . 'install/';
 $results = ['fields' => 0, 'templates' => 0, 'pages' => 0, 'errors' => []];
+$deferredFields = []; // Page ref fields that need parent/template IDs resolved later
 
 echo "=== ProcessWire Field & Template Import ===\n\n";
 
@@ -90,6 +91,13 @@ if (file_exists($fieldsFile)) {
                 }
 
                 $field->save();
+
+                // Page reference fields need a second pass to resolve parent/template IDs
+                // (stored as paths/names in JSON, resolved after all fields+templates exist)
+                if (isset($fieldData['settings']['parent_id']) && is_string($fieldData['settings']['parent_id'])) {
+                    $deferredFields[] = ['field' => $name, 'settings' => $fieldData['settings']];
+                }
+
                 $results['fields']++;
                 echo "  [ok] Created field: {$name} ({$fieldData['type']})\n";
 
@@ -108,6 +116,7 @@ echo "\n";
 // ──────────────────────────────────────────────
 // STEP 2: Import Templates
 // ──────────────────────────────────────────────
+$deferredTemplates = [];
 $templatesFile = $installDir . 'templates.json';
 if (file_exists($templatesFile)) {
     $templatesData = json_decode(file_get_contents($templatesFile), true);
@@ -168,8 +177,19 @@ if (file_exists($templatesFile)) {
                 if (isset($tplData['noChildren'])) $template->noChildren = (int)$tplData['noChildren'];
                 if (isset($tplData['noParents'])) $template->noParents = (int)$tplData['noParents'];
                 if (isset($tplData['urlSegments'])) $template->urlSegments = (int)$tplData['urlSegments'];
+                if (isset($tplData['sortfield'])) $template->sortfield = $tplData['sortfield'];
+
+                // RSS / utility templates: disable _init.php and _main.php wrapping
+                if (!empty($tplData['noPrependTemplateFile'])) $template->noPrependTemplateFile = 1;
+                if (!empty($tplData['noAppendTemplateFile'])) $template->noAppendTemplateFile = 1;
+                if (isset($tplData['contentType'])) $template->contentType = $tplData['contentType'];
 
                 $template->save();
+
+                // Allowed child/parent template restrictions (second pass after all templates exist)
+                if (isset($tplData['allowedChildTemplates']) || isset($tplData['allowedParentTemplates'])) {
+                    $deferredTemplates[] = $tplData;
+                }
 
                 // Set field widths
                 if (isset($tplData['fieldWidths'])) {
@@ -193,6 +213,69 @@ if (file_exists($templatesFile)) {
     }
 } else {
     echo "No templates.json found — skipping template import.\n";
+}
+
+// Resolve deferred template restrictions (child/parent)
+if (!empty($deferredTemplates)) {
+    echo "\nResolving template restrictions...\n";
+    foreach ($deferredTemplates as $tplData) {
+        $template = wire('templates')->get($tplData['name']);
+        if (!$template) continue;
+
+        if (isset($tplData['allowedChildTemplates'])) {
+            $ids = [];
+            foreach ($tplData['allowedChildTemplates'] as $childName) {
+                $childTpl = wire('templates')->get($childName);
+                if ($childTpl) $ids[] = $childTpl->id;
+            }
+            if ($ids) {
+                $template->childTemplates = $ids;
+                $template->save();
+                echo "  [ok] Set child templates for '{$tplData['name']}'\n";
+            }
+        }
+
+        if (isset($tplData['allowedParentTemplates'])) {
+            $ids = [];
+            foreach ($tplData['allowedParentTemplates'] as $parentName) {
+                $parentTpl = wire('templates')->get($parentName);
+                if ($parentTpl) $ids[] = $parentTpl->id;
+            }
+            if ($ids) {
+                $template->parentTemplates = $ids;
+                $template->save();
+                echo "  [ok] Set parent templates for '{$tplData['name']}'\n";
+            }
+        }
+    }
+}
+
+// Resolve deferred page reference field settings (parent_id, template_id as paths/names)
+if (!empty($deferredFields)) {
+    echo "\nResolving page reference field settings...\n";
+    foreach ($deferredFields as $deferred) {
+        $field = wire('fields')->get($deferred['field']);
+        if (!$field) continue;
+
+        $settings = $deferred['settings'];
+
+        if (isset($settings['parent_id']) && is_string($settings['parent_id'])) {
+            $parentPage = wire('pages')->get($settings['parent_id']);
+            if ($parentPage->id) {
+                $field->set('parent_id', $parentPage->id);
+            }
+        }
+
+        if (isset($settings['template_id']) && is_string($settings['template_id'])) {
+            $tpl = wire('templates')->get($settings['template_id']);
+            if ($tpl) {
+                $field->set('template_id', $tpl->id);
+            }
+        }
+
+        $field->save();
+        echo "  [ok] Resolved settings for field '{$deferred['field']}'\n";
+    }
 }
 
 echo "\n";

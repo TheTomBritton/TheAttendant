@@ -1,6 +1,10 @@
-# ProcessWire Starter
+# Sound M8
 
-A template repository for rapidly scaffolding ProcessWire websites with Claude Code automation.
+<p align="center">
+  <img src="hero.gif" alt="Sound M8" width="500">
+</p>
+
+A ProcessWire blog and news site built with Tailwind CSS, HTMX, and Claude Code automation.
 
 ## Quick Start
 

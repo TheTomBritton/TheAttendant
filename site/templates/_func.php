@@ -135,3 +135,85 @@ function renderPageCard(Page $item, bool $showImage = true, bool $showSummary = 
 
     return $out;
 }
+
+/**
+ * Render a blog post card for listings
+ */
+function renderPostCard(Page $post): string {
+    $out = "<article class='post-card'>";
+
+    if ($post->featured_image) {
+        $thumb = $post->featured_image->size(600, 400);
+        $out .= "<a href='{$post->url}' class='post-card-image'>";
+        $out .= "<img src='{$thumb->url}' alt='" . wire('sanitizer')->entities($thumb->description) . "' width='600' height='400' loading='lazy'>";
+        $out .= "</a>";
+    }
+
+    $out .= "<div class='post-card-body'>";
+
+    // Category badges
+    if ($post->blog_categories && $post->blog_categories->count()) {
+        $out .= "<div class='post-card-categories'>";
+        foreach ($post->blog_categories as $cat) {
+            $out .= "<a href='{$cat->url}' class='category-badge'>{$cat->title}</a> ";
+        }
+        $out .= "</div>";
+    }
+
+    $out .= "<h2><a href='{$post->url}'>{$post->title}</a></h2>";
+
+    // Date
+    $date = date('j F Y', $post->getUnformatted('date'));
+    $out .= "<time datetime='" . date('Y-m-d', $post->getUnformatted('date')) . "'>{$date}</time>";
+
+    if ($post->summary) {
+        $out .= "<p>" . truncate($post->summary, 150) . "</p>";
+    }
+
+    $out .= "<a href='{$post->url}' class='read-more'>Read more</a>";
+    $out .= "</div></article>";
+
+    return $out;
+}
+
+/**
+ * Render Article JSON-LD structured data
+ */
+function renderArticleSchema(Page $page): string {
+    $schema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'Article',
+        'headline' => $page->title,
+        'description' => $page->get('seo_description|summary|'),
+        'datePublished' => date('c', $page->getUnformatted('date')),
+        'dateModified' => date('c', $page->modified),
+        'url' => $page->httpUrl,
+    ];
+
+    if ($page->featured_image) {
+        $schema['image'] = $page->featured_image->httpUrl;
+    }
+
+    if ($page->blog_author && $page->blog_author->id) {
+        $schema['author'] = [
+            '@type' => 'Person',
+            'name' => $page->blog_author->title,
+        ];
+    }
+
+    return "<script type='application/ld+json'>" . json_encode($schema, JSON_UNESCAPED_SLASHES) . "</script>";
+}
+
+/**
+ * Render pagination controls with Tailwind classes
+ */
+function renderPagination(\ProcessWire\PageArray $items): string {
+    return $items->renderPager([
+        'nextItemLabel' => 'Next &rarr;',
+        'previousItemLabel' => '&larr; Previous',
+        'listMarkup' => '<nav aria-label="Pagination"><ul class="pagination">{out}</ul></nav>',
+        'itemMarkup' => '<li class="{class}">{out}</li>',
+        'linkMarkup' => '<a href="{url}">{out}</a>',
+        'currentItemClass' => 'active',
+    ]);
+}

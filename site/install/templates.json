@@ -33,5 +33,137 @@
         "noParents": false,
         "urlSegments": false,
         "tags": "core"
+    },
+    {
+        "name": "blog-index",
+        "label": "Blog Index",
+        "fields": ["title", "body", "summary", "seo_title", "seo_description"],
+        "fieldWidths": {
+            "title": 100,
+            "summary": 100,
+            "body": 100,
+            "seo_title": 50,
+            "seo_description": 50
+        },
+        "noChildren": false,
+        "noParents": false,
+        "urlSegments": true,
+        "allowedChildTemplates": ["blog-post"],
+        "tags": "blog"
+    },
+    {
+        "name": "blog-post",
+        "label": "Blog Post",
+        "fields": ["title", "date", "body", "summary", "featured_image", "images", "blog_categories", "blog_tags", "blog_author", "seo_title", "seo_description"],
+        "fieldWidths": {
+            "title": 100,
+            "date": 50,
+            "blog_author": 50,
+            "blog_categories": 50,
+            "blog_tags": 50,
+            "summary": 100,
+            "body": 100,
+            "featured_image": 50,
+            "images": 50,
+            "seo_title": 50,
+            "seo_description": 50
+        },
+        "noChildren": true,
+        "noParents": false,
+        "allowedParentTemplates": ["blog-index"],
+        "urlSegments": false,
+        "sortfield": "-date",
+        "tags": "blog"
+    },
+    {
+        "name": "blog-category",
+        "label": "Blog Category",
+        "fields": ["title", "body", "featured_image", "seo_title", "seo_description"],
+        "fieldWidths": {
+            "title": 100,
+            "body": 100,
+            "featured_image": 50,
+            "seo_title": 50,
+            "seo_description": 50
+        },
+        "noChildren": false,
+        "noParents": false,
+        "allowedParentTemplates": ["basic-page"],
+        "urlSegments": false,
+        "tags": "blog"
+    },
+    {
+        "name": "blog-tag",
+        "label": "Blog Tag",
+        "fields": ["title"],
+        "fieldWidths": {
+            "title": 100
+        },
+        "noChildren": true,
+        "noParents": false,
+        "allowedParentTemplates": ["basic-page"],
+        "urlSegments": false,
+        "tags": "blog"
+    },
+    {
+        "name": "blog-author",
+        "label": "Blog Author",
+        "fields": ["title", "body", "featured_image"],
+        "fieldWidths": {
+            "title": 100,
+            "body": 100,
+            "featured_image": 50
+        },
+        "noChildren": true,
+        "noParents": false,
+        "allowedParentTemplates": ["basic-page"],
+        "urlSegments": false,
+        "tags": "blog"
+    },
+    {
+        "name": "blog-rss",
+        "label": "Blog RSS Feed",
+        "fields": ["title"],
+        "fieldWidths": {
+            "title": 100
+        },
+        "noChildren": true,
+        "noParents": false,
+        "urlSegments": false,
+        "contentType": "application/rss+xml",
+        "noPrependTemplateFile": true,
+        "noAppendTemplateFile": true,
+        "tags": "blog"
+    },
+    {
+        "name": "contact",
+        "label": "Contact Page",
+        "fields": ["title", "body", "summary", "seo_title", "seo_description"],
+        "fieldWidths": {
+            "title": 100,
+            "summary": 100,
+            "body": 100,
+            "seo_title": 50,
+            "seo_description": 50
+        },
+        "noChildren": true,
+        "noParents": false,
+        "urlSegments": false,
+        "tags": "core"
+    },
+    {
+        "name": "search",
+        "label": "Search Results",
+        "fields": ["title", "body", "seo_title", "seo_description"],
+        "fieldWidths": {
+            "title": 100,
+            "body": 100,
+            "seo_title": 50,
+            "seo_description": 50
+        },
+        "noChildren": true,
+        "noParents": false,
+        "urlSegments": false,
+        "tags": "core"
     }
 ]

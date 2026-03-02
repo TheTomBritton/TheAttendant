@@ -1,11 +1,15 @@
 {
-    "name": "pw-starter",
+    "name": "sound-m8",
     "version": "1.0.0",
-    "description": "ProcessWire website starter — frontend build tooling",
+    "description": "Sound M8 — frontend build tooling",
     "private": true,
     "scripts": {
         "dev": "tailwindcss -i ./site/assets/src/app.css -o ./site/assets/dist/app.css --watch",
-        "build": "tailwindcss -i ./site/assets/src/app.css -o ./site/assets/dist/app.css --minify"
+        "build": "tailwindcss -i ./site/assets/src/app.css -o ./site/assets/dist/app.css --minify",
+        "postinstall": "cp node_modules/htmx.org/dist/htmx.min.js site/assets/dist/htmx.min.js"
+    },
+    "dependencies": {
+        "htmx.org": "^2.0"
     },
     "devDependencies": {
         "tailwindcss": "^3.4",

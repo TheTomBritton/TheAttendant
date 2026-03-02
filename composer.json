@@ -1,6 +1,6 @@
 {
-    "name": "pw-starter/project",
-    "description": "ProcessWire website starter template",
+    "name": "sound-m8/website",
+    "description": "Sound M8 — ProcessWire blog and news site",
     "type": "project",
     "license": "MIT",
     "require": {

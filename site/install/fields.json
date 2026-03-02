@@ -35,6 +35,7 @@
         "required": false,
         "columnWidth": 50,
         "tags": "core",
+        "inputfieldClass": "InputfieldCroppableImage3",
         "settings": {
             "maxFiles": 1,
             "extensions": "jpg jpeg png gif webp",
@@ -83,6 +84,71 @@
             "rows": 2,
             "maxlength": 170,
             "contentType": 0
+        }
+    },
+    {
+        "name": "date",
+        "type": "FieldtypeDatetime",
+        "label": "Publication Date",
+        "description": "When this post was published. Used for sorting and display.",
+        "required": true,
+        "columnWidth": 50,
+        "tags": "blog",
+        "settings": {
+            "dateOutputFormat": "j F Y",
+            "dateInputFormat": "Y-m-d",
+            "timeInputFormat": "H:i",
+            "defaultToday": 1
+        }
+    },
+    {
+        "name": "blog_categories",
+        "type": "FieldtypePage",
+        "label": "Categories",
+        "description": "Assign one or more categories to this post.",
+        "required": false,
+        "columnWidth": 50,
+        "tags": "blog",
+        "inputfieldClass": "InputfieldAsmSelect",
+        "settings": {
+            "derefAsPage": 0,
+            "parent_id": "/blog-categories/",
+            "template_id": "blog-category",
+            "labelFieldName": "title",
+            "addable": true
+        }
+    },
+    {
+        "name": "blog_tags",
+        "type": "FieldtypePage",
+        "label": "Tags",
+        "description": "Assign tags to this post for filtering and discovery.",
+        "required": false,
+        "columnWidth": 50,
+        "tags": "blog",
+        "inputfieldClass": "InputfieldAsmSelect",
+        "settings": {
+            "derefAsPage": 0,
+            "parent_id": "/blog-tags/",
+            "template_id": "blog-tag",
+            "labelFieldName": "title",
+            "addable": true
+        }
+    },
+    {
+        "name": "blog_author",
+        "type": "FieldtypePage",
+        "label": "Author",
+        "description": "The author of this post. Optional — leave blank if not using author pages.",
+        "required": false,
+        "columnWidth": 50,
+        "tags": "blog",
+        "inputfieldClass": "InputfieldSelect",
+        "settings": {
+            "derefAsPage": 1,
+            "parent_id": "/blog-authors/",
+            "template_id": "blog-author",
+            "labelFieldName": "title"
         }
     }
 ]
