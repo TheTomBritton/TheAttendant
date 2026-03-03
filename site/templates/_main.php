@@ -34,10 +34,10 @@
 
     <!-- Styles -->
     <?php
-    $cssFile = $config->paths->templates . 'assets/dist/app.css';
+    $cssFile = $config->paths->assets . 'dist/app.css';
     $cssVersion = file_exists($cssFile) ? filemtime($cssFile) : '1';
     ?>
-    <link rel="stylesheet" href="<?= $config->urls->templates ?>assets/dist/app.css?v=<?= $cssVersion ?>">
+    <link rel="stylesheet" href="<?= $config->urls->assets ?>dist/app.css?v=<?= $cssVersion ?>">
 
     <?= $extra_head ?>
 </head>
@@ -55,7 +55,7 @@
 
             <nav aria-label="Main navigation">
                 <ul>
-                    <?php foreach ($home->children('include=hidden') as $item): ?>
+                    <?php foreach ($home->children() as $item): ?>
                     <li>
                         <a href="<?= $item->url ?>"<?= ($page->rootParent->id === $item->id || $page->id === $item->id) ? ' aria-current="page"' : '' ?>>
                             <?= $item->title ?>
@@ -64,8 +64,39 @@
                     <?php endforeach; ?>
                 </ul>
             </nav>
+
+            <?php $searchPage = $pages->get('template=search'); ?>
+            <?php if ($searchPage->id): ?>
+            <a href="<?= $searchPage->url ?>" class="nav-search-link" aria-label="Search">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </a>
+            <?php endif; ?>
+
+            <button class="mobile-menu-btn" aria-label="Toggle menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
         </div>
     </header>
+
+    <!-- Mobile navigation -->
+    <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation">
+        <ul>
+            <?php foreach ($home->children() as $item): ?>
+            <li>
+                <a href="<?= $item->url ?>"<?= ($page->rootParent->id === $item->id || $page->id === $item->id) ? ' aria-current="page"' : '' ?>>
+                    <?= $item->title ?>
+                </a>
+            </li>
+            <?php endforeach; ?>
+            <?php if ($searchPage->id): ?>
+            <li>
+                <a href="<?= $searchPage->url ?>">Search</a>
+            </li>
+            <?php endif; ?>
+        </ul>
+    </nav>
 
     <?php if ($hero): ?>
     <!-- Hero / Banner -->
@@ -98,14 +129,36 @@
     </footer>
 
     <!-- Scripts -->
-    <script src="<?= $config->urls->templates ?>assets/dist/htmx.min.js" defer></script>
+    <script src="<?= $config->urls->assets ?>dist/htmx.min.js" defer></script>
     <?php
-    $jsFile = $config->paths->templates . 'assets/dist/app.js';
+    $jsFile = $config->paths->assets . 'dist/app.js';
     if (file_exists($jsFile)):
         $jsVersion = filemtime($jsFile);
     ?>
-    <script src="<?= $config->urls->templates ?>assets/dist/app.js?v=<?= $jsVersion ?>" defer></script>
+    <script src="<?= $config->urls->assets ?>dist/app.js?v=<?= $jsVersion ?>" defer></script>
     <?php endif; ?>
+
+    <!-- Mobile menu toggle -->
+    <script>
+    (function() {
+        var btn = document.querySelector('.mobile-menu-btn');
+        var nav = document.getElementById('mobile-nav');
+        if (!btn || !nav) return;
+        btn.addEventListener('click', function() {
+            var open = nav.classList.toggle('is-open');
+            btn.setAttribute('aria-expanded', open);
+            document.body.style.overflow = open ? 'hidden' : '';
+        });
+        // Close on link click
+        nav.querySelectorAll('a').forEach(function(a) {
+            a.addEventListener('click', function() {
+                nav.classList.remove('is-open');
+                btn.setAttribute('aria-expanded', 'false');
+                document.body.style.overflow = '';
+            });
+        });
+    })();
+    </script>
 
     <?= $extra_foot ?>
 </body>

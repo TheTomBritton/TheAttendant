@@ -101,7 +101,7 @@ function truncate(string $text, int $length = 160, string $suffix = '&hellip;'):
  * @return PageArray
  */
 function getNavPages(): PageArray {
-    return wire('pages')->get('/')->children('include=hidden');
+    return wire('pages')->get('/')->children();
 }
 
 /**
