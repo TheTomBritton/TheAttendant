@@ -1,11 +1,12 @@
 {
-    "name": "pw-starter/project",
-    "description": "ProcessWire website starter template",
+    "name": "maid-of-threads/shop",
+    "description": "Maid of Threads — online shop built on ProcessWire",
     "type": "project",
-    "license": "MIT",
+    "license": "proprietary",
     "require": {
         "php": ">=8.2",
-        "processwire/processwire": "^3.0"
+        "processwire/processwire": "^3.0",
+        "stripe/stripe-php": "^13.0"
     },
     "config": {
         "preferred-install": "dist",

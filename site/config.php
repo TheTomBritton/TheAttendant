@@ -22,9 +22,9 @@ $isLocal = in_array($_SERVER['HTTP_HOST'] ?? '', [
 // ──────────────────────────────────────────────
 if ($isLocal) {
     $config->dbHost = 'db';           // Docker service name
-    $config->dbName = 'pw_dev';
-    $config->dbUser = 'pw_user';
-    $config->dbPass = 'pw_password';
+    $config->dbName = 'sound_m8';
+    $config->dbUser = 'sound_m8_user';
+    $config->dbPass = 'sound_m8_password';
 } else {
     // Production — update these with Krystal credentials
     $config->dbHost = 'localhost';
@@ -46,7 +46,7 @@ if ($isLocal) {
     $config->debug = true;
 } else {
     // Production — update with your domain
-    $config->httpHosts = ['www.yourdomain.com', 'yourdomain.com'];
+    $config->httpHosts = ['www.maidofthreads.co.uk', 'maidofthreads.co.uk'];
     $config->https = true;
     $config->debug = false;
 }
@@ -85,3 +85,26 @@ $config->imageSizerOptions('webpAdd', true);  // Auto-generate WebP variants
 // ──────────────────────────────────────────────
 // Uncomment and change for production (security hardening)
 // $config->urls->admin = '/your-custom-admin/';
+
+// ──────────────────────────────────────────────
+// Stripe Payment Configuration
+// ──────────────────────────────────────────────
+if ($isLocal) {
+    $config->stripePublicKey = 'pk_test_CHANGE_ME';
+    $config->stripeSecretKey = 'sk_test_CHANGE_ME';
+    $config->stripeWebhookSecret = 'whsec_CHANGE_ME';
+} else {
+    $config->stripePublicKey = 'pk_live_CHANGE_ME';
+    $config->stripeSecretKey = 'sk_live_CHANGE_ME';
+    $config->stripeWebhookSecret = 'whsec_CHANGE_ME';
+}
+
+// ──────────────────────────────────────────────
+// Shop Settings
+// ──────────────────────────────────────────────
+$config->shopCurrency = 'gbp';
+$config->shopCurrencySymbol = '£';
+$config->shopVatRate = 0.20;           // 20% UK VAT
+$config->shopPricesIncludeVat = true;  // Display prices inclusive of VAT
+$config->shopFlatShipping = 3.95;      // Flat shipping rate in GBP
+$config->shopFreeShippingThreshold = 50.00; // Free shipping above this

@@ -1,57 +1,316 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 /*
- * Custom base styles and component classes below.
- * Tailwind utilities should be used directly in templates where possible.
- * Only add component classes here when reuse across many templates is needed.
+ * Sound M8 — Filix theme overrides
+ *
+ * Loaded after all Filix CSS files to handle PW-specific
+ * styling and minor brand tweaks.
  */
 
 /* ──────────────────────────────────────────────
-   Base styles
+   Breadcrumbs
    ────────────────────────────────────────────── */
 
-@layer base {
-    body {
-        @apply text-gray-900 antialiased;
-    }
+.breadcrumb_nav {
+    margin-bottom: 30px;
+}
 
-    a {
-        @apply text-blue-700 underline hover:text-blue-900;
-    }
+.breadcrumb_nav .breadcrumb {
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
 
-    h1, h2, h3, h4, h5, h6 {
-        @apply font-bold leading-tight;
-    }
+.breadcrumb_nav .breadcrumb li {
+    font-size: 14px;
+    color: #999;
+    font-family: "Poppins", sans-serif;
+}
+
+.breadcrumb_nav .breadcrumb li + li::before {
+    content: "/";
+    margin-right: 8px;
+    color: #ccc;
+}
+
+.breadcrumb_nav .breadcrumb li a {
+    color: #646c84;
+}
+
+.breadcrumb_nav .breadcrumb li a:hover {
+    color: #171819;
+}
+
+.breadcrumb_nav .breadcrumb li.active {
+    color: #333;
 }
 
 /* ──────────────────────────────────────────────
-   Component classes (keep minimal — prefer utilities)
+   Prose / body content
    ────────────────────────────────────────────── */
 
-@layer components {
-    .container {
-        @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
-    }
+.blog_single_content .blog_single_item h2,
+.blog_single_content .blog_single_item h3,
+.blog_single_content .blog_single_item h4 {
+    color: #333;
+    font-family: "futuraheavy";
+    margin-bottom: 15px;
+    margin-top: 30px;
+}
 
-    .btn {
-        @apply inline-block px-6 py-3 bg-blue-700 text-white font-medium no-underline rounded hover:bg-blue-800 transition-colors;
-    }
+.blog_single_content .blog_single_item h2 {
+    font-size: 28px;
+    line-height: 36px;
+}
 
-    .btn-secondary {
-        @apply inline-block px-6 py-3 bg-gray-200 text-gray-900 font-medium no-underline rounded hover:bg-gray-300 transition-colors;
-    }
+.blog_single_content .blog_single_item h3 {
+    font-size: 22px;
+    line-height: 30px;
+}
 
-    /* Screen reader only — visible on focus */
-    .sr-only {
-        @apply absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap;
-        clip: rect(0, 0, 0, 0);
-        border: 0;
-    }
+.blog_single_content .blog_single_item ul,
+.blog_single_content .blog_single_item ol {
+    margin-bottom: 20px;
+    padding-left: 20px;
+    color: #171819;
+    font-family: "Poppins", sans-serif;
+    font-size: 16px;
+    line-height: 30px;
+}
 
-    .sr-only.focus\:not-sr-only:focus {
-        @apply static w-auto h-auto p-2 m-0 overflow-visible whitespace-normal;
-        clip: auto;
-    }
+.blog_single_content .blog_single_item a {
+    color: #171819;
+    text-decoration: underline;
+}
+
+.blog_single_content .blog_single_item a:hover {
+    color: rgba(23, 24, 25, 0.6);
+}
+
+/* ──────────────────────────────────────────────
+   Search / live results
+   ────────────────────────────────────────────── */
+
+.live_results_wrap {
+    background: #fff;
+    border: 1px solid #e1e1e1;
+    margin-top: -20px;
+    margin-bottom: 30px;
+    display: none;
+}
+
+.live_results_wrap:not(:empty) {
+    display: block;
+}
+
+.live_result_item {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    border-bottom: 1px solid #f5f5f5;
+    color: #171819;
+}
+
+.live_result_item:hover {
+    background: #f9f9f9;
+}
+
+.live_result_item .media-left {
+    margin-right: 15px;
+}
+
+.live_result_item .media-left img {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+}
+
+.live_result_empty {
+    padding: 15px;
+    color: #999;
+    font-size: 14px;
+}
+
+.search_results_count {
+    color: #999;
+    font-size: 14px;
+    margin-bottom: 30px;
+    font-family: "Poppins", sans-serif;
+}
+
+/* ──────────────────────────────────────────────
+   Tags
+   ────────────────────────────────────────────── */
+
+.tag_link {
+    display: inline-block;
+    text-transform: uppercase;
+    border: 1px solid #e1e1e1;
+    padding: 8px 20px;
+    font-size: 12px;
+    font-weight: 400;
+    color: #171819;
+    transition: all 0.5s;
+    margin: 0 5px 5px 0;
+    font-family: "Poppins", sans-serif;
+}
+
+.tag_link:hover {
+    background: #171819;
+    border-color: #171819;
+    color: #fff;
+}
+
+/* ──────────────────────────────────────────────
+   Related posts
+   ────────────────────────────────────────────── */
+
+.related_posts {
+    padding-top: 40px;
+}
+
+.related_posts .widget_title {
+    margin-bottom: 30px;
+}
+
+/* ──────────────────────────────────────────────
+   Gallery
+   ────────────────────────────────────────────── */
+
+.gallery_wrap {
+    padding: 30px 0;
+}
+
+.gallery_item {
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.gallery_item img {
+    width: 100%;
+    height: auto;
+    transition: transform 0.3s;
+}
+
+.gallery_item:hover img {
+    transform: scale(1.05);
+}
+
+/* ──────────────────────────────────────────────
+   404 page
+   ────────────────────────────────────────────── */
+
+.suggested_links {
+    margin-top: 30px;
+}
+
+.suggested_links a {
+    display: inline-block;
+    text-transform: uppercase;
+    border: 1px solid #e1e1e1;
+    padding: 10px 30px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #171819;
+    margin: 0 5px 10px;
+    transition: all 0.5s;
+    font-family: "Poppins", sans-serif;
+}
+
+.suggested_links a:hover {
+    background: #171819;
+    border-color: #171819;
+    color: #fff;
+}
+
+/* ──────────────────────────────────────────────
+   Contact form success
+   ────────────────────────────────────────────── */
+
+.alert_success {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+    padding: 30px;
+    margin-bottom: 30px;
+    font-family: "Poppins", sans-serif;
+}
+
+/* ──────────────────────────────────────────────
+   Image captions
+   ────────────────────────────────────────────── */
+
+.img_caption {
+    font-size: 13px;
+    color: #999;
+    margin-top: 10px;
+    font-family: "Poppins", sans-serif;
+}
+
+/* ──────────────────────────────────────────────
+   FrontendForms integration
+   ────────────────────────────────────────────── */
+
+.contact_form .ff-form .ff-inputfield input,
+.contact_form .ff-form .ff-inputfield textarea,
+.contact_form .ff-form .ff-inputfield select {
+    color: #333;
+    font-weight: 300;
+    font-size: 15px;
+    font-family: "Poppins", sans-serif;
+    line-height: 30px;
+    border: 1px solid #c1c1c1;
+    box-shadow: none;
+    outline: none;
+    border-radius: 0;
+    height: 60px;
+    padding: 10px 25px;
+    transition: all 0.5s;
+    width: 100%;
+}
+
+.contact_form .ff-form .ff-inputfield textarea {
+    min-height: 200px;
+    height: auto;
+}
+
+.contact_form .ff-form .ff-inputfield input:focus,
+.contact_form .ff-form .ff-inputfield textarea:focus {
+    border-color: #333;
+}
+
+.contact_form .ff-form button[type="submit"] {
+    color: #fff;
+    font-weight: 400;
+    font-size: 15px;
+    font-family: "Poppins", sans-serif;
+    line-height: 30px;
+    background-color: transparent;
+    background-image: linear-gradient(135deg, #292929 50%, transparent 50%);
+    background-size: 300% 300%;
+    background-position: 0% 0%;
+    background-repeat: no-repeat;
+    transition: all 1s;
+    border: 1px solid #292929;
+    padding: 15px 55px;
+    cursor: pointer;
+    border-radius: 0;
+}
+
+.contact_form .ff-form button[type="submit"]:hover {
+    background-size: 0px 50px;
+    background-position: -50px -50px;
+    color: #292929;
+}
+
+/* ──────────────────────────────────────────────
+   Utility: centred menu overlay
+   ────────────────────────────────────────────── */
+
+.opnen_menu .header_main_menu {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }

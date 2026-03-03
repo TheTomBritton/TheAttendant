@@ -84,5 +84,173 @@
             "maxlength": 170,
             "contentType": 0
         }
+    },
+    {
+        "name": "date",
+        "type": "FieldtypeDatetime",
+        "label": "Publication Date",
+        "description": "When this content was published.",
+        "required": true,
+        "columnWidth": 50,
+        "tags": "blog",
+        "settings": {
+            "dateOutputFormat": "j F Y",
+            "dateInputFormat": "Y-m-d",
+            "defaultToday": 1
+        }
+    },
+    {
+        "name": "blog_categories",
+        "type": "FieldtypePage",
+        "label": "Categories",
+        "description": "Assign one or more categories to this post.",
+        "required": false,
+        "columnWidth": 50,
+        "tags": "blog",
+        "settings": {
+            "derefAsPage": 0,
+            "inputfield": "InputfieldAsmSelect",
+            "parent_id": "/blog-categories/",
+            "template_id": "blog-category",
+            "labelFieldName": "title"
+        }
+    },
+    {
+        "name": "blog_tags",
+        "type": "FieldtypePage",
+        "label": "Tags",
+        "description": "Add tags to help readers find related content.",
+        "required": false,
+        "columnWidth": 50,
+        "tags": "blog",
+        "settings": {
+            "derefAsPage": 0,
+            "inputfield": "InputfieldPageAutocomplete",
+            "parent_id": "/blog-tags/",
+            "template_id": "blog-tag",
+            "labelFieldName": "title",
+            "addable": 1
+        }
+    },
+    {
+        "name": "product_price",
+        "type": "FieldtypeFloat",
+        "label": "Price (£)",
+        "description": "Product price in GBP, inclusive of VAT.",
+        "required": true,
+        "columnWidth": 25,
+        "tags": "shop",
+        "settings": {
+            "precision": 2
+        }
+    },
+    {
+        "name": "product_sku",
+        "type": "FieldtypeText",
+        "label": "SKU",
+        "description": "Unique product identifier / stock keeping unit.",
+        "required": false,
+        "columnWidth": 25,
+        "tags": "shop",
+        "settings": {
+            "maxlength": 64
+        }
+    },
+    {
+        "name": "product_weight",
+        "type": "FieldtypeFloat",
+        "label": "Weight (kg)",
+        "description": "Product weight in kilograms. Used for shipping calculations.",
+        "required": false,
+        "columnWidth": 25,
+        "tags": "shop",
+        "settings": {
+            "precision": 3
+        }
+    },
+    {
+        "name": "product_stock",
+        "type": "FieldtypeInteger",
+        "label": "Stock Quantity",
+        "description": "Number of items in stock. Set to 0 for unlimited.",
+        "required": false,
+        "columnWidth": 25,
+        "tags": "shop",
+        "settings": {
+            "defaultValue": 0
+        }
+    },
+    {
+        "name": "product_in_stock",
+        "type": "FieldtypeToggle",
+        "label": "In Stock",
+        "description": "Whether this product is currently available for purchase.",
+        "required": false,
+        "columnWidth": 25,
+        "tags": "shop",
+        "settings": {
+            "defaultValue": 1
+        }
+    },
+    {
+        "name": "product_gallery",
+        "type": "FieldtypeImage",
+        "label": "Product Gallery",
+        "description": "Additional product photos. The featured image is shown first; these appear as extra gallery images.",
+        "required": false,
+        "columnWidth": 100,
+        "tags": "shop",
+        "settings": {
+            "maxFiles": 0,
+            "extensions": "jpg jpeg png gif webp",
+            "maxWidth": 4096,
+            "maxHeight": 4096,
+            "outputFormat": 0
+        }
+    },
+    {
+        "name": "product_category",
+        "type": "FieldtypePage",
+        "label": "Product Categories",
+        "description": "Assign this product to one or more categories.",
+        "required": false,
+        "columnWidth": 50,
+        "tags": "shop",
+        "settings": {
+            "derefAsPage": 0,
+            "inputfield": "InputfieldAsmSelect",
+            "parent_id": "/shop/",
+            "template_id": "product-category",
+            "labelFieldName": "title"
+        }
+    },
+    {
+        "name": "related_products",
+        "type": "FieldtypePage",
+        "label": "Related Products",
+        "description": "Manually select related products for cross-selling.",
+        "required": false,
+        "columnWidth": 50,
+        "tags": "shop",
+        "settings": {
+            "derefAsPage": 0,
+            "inputfield": "InputfieldPageAutocomplete",
+            "template_id": "product",
+            "labelFieldName": "title"
+        }
+    },
+    {
+        "name": "product_features",
+        "type": "FieldtypeTextarea",
+        "label": "Product Features",
+        "description": "Key features or specifications. Supports rich text for bullet lists.",
+        "required": false,
+        "columnWidth": 100,
+        "tags": "shop",
+        "inputfieldClass": "InputfieldCKEditor",
+        "settings": {
+            "rows": 8,
+            "contentType": 1
+        }
     }
 ]

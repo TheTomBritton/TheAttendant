@@ -4,7 +4,6 @@
  * _init.php — Auto-prepended before every template
  *
  * Sets up default region variables that templates can override.
- * Include shared helper functions here.
  */
 
 // Include helper functions
@@ -36,3 +35,15 @@ $extra_foot = '';
 // Site-wide variables
 $site_name = $pages->get('/')->title;
 $home = $pages->get('/');
+
+// Shop pages — used in navigation and cart
+$shop_page = $pages->get('/shop/');
+$blog_page = $pages->get('/blog/');
+$cart_page = $pages->get('/cart/');
+
+// Cart item count from session (for header badge)
+$cart = $session->get('cart') ?: [];
+$cart_count = 0;
+foreach ($cart as $item) {
+    $cart_count += $item['qty'] ?? 0;
+}
