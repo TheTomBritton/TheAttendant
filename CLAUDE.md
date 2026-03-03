@@ -19,6 +19,10 @@ TheAttendant/
 ├── .claude/commands/                  ← Slash commands for Claude Code
 ├── .claude/instructions/              ← Deep reference documentation
 ├── docker/                            ← Local development environment
+├── themes/                            ← Pre-made HTML templates for conversion
+│   └── theme-name/                    ← Each theme in its own directory
+│       ├── *.html                     ← Static page designs
+│       └── assets/                    ← CSS, JS, fonts, images
 ├── scripts/                           ← Setup and automation scripts
 ├── site/                              ← ProcessWire site profile (your custom work)
 │   ├── templates/                     ← PHP template files
@@ -49,9 +53,10 @@ TheAttendant/
 ## Development Workflow
 
 1. Clone this repo (or use as GitHub template) for a new client project
-2. Run `/new-project` in Claude Code to scaffold based on project requirements
-3. `composer install` pulls in PW core
-4. `npm install` sets up frontend build tooling
+2. Optionally drop a purchased HTML template into `themes/`
+3. Run `/new-project` in Claude Code to scaffold — choose a theme or build from scratch
+4. `composer install` pulls in PW core
+5. `npm install` sets up frontend build tooling
 5. `/docker-up` starts the local development environment
 6. Develop templates, fields, and frontend
 7. `/export-fields` generates portable field/template JSON
@@ -102,6 +107,7 @@ Before making significant decisions, consult the relevant instruction file in `.
 | `performance-tuning.md` | Optimising caching, images, page load speed |
 | `deployment-krystal.md` | Deploying to Krystal shared hosting |
 | `docker-setup.md` | Setting up and using the Docker dev environment |
+| `theme-conversion.md` | Converting a pre-made HTML template into PW templates |
 
 ## Slash Commands
 

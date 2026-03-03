@@ -22,6 +22,9 @@
 # Environment files
 /docker/.env
 
+# Playwright MCP
+.playwright-mcp/
+
 # OS files
 .DS_Store
 Thumbs.db
