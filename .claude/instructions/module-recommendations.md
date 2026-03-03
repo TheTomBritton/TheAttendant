@@ -6,8 +6,8 @@ All modules listed here are free and compatible with ProcessWire 3.0.229+ and PH
 
 ### SeoMaestro
 - **Purpose**: Complete SEO meta tags, Open Graph, Twitter Cards, JSON-LD structured data
-- **Install**: `site/modules/SeoMaestro/`
-- **URL**: https://github.com/daun/SeoMaestro
+- **Install**: `git clone --depth 1 https://github.com/wanze/SeoMaestro.git site/modules/SeoMaestro`
+- **URL**: https://github.com/wanze/SeoMaestro
 - **Setup**: Creates SEO fieldgroup. Add to all public-facing templates.
 - **Usage**:
   ```php
@@ -17,7 +17,8 @@ All modules listed here are free and compatible with ProcessWire 3.0.229+ and PH
 
 ### MarkupSitemap
 - **Purpose**: Auto-generates XML sitemap at /sitemap.xml
-- **URL**: https://github.com/aberask/MarkupSitemap
+- **Install**: `git clone --depth 1 https://github.com/mikerockett/markup-sitemap.git site/modules/MarkupSitemap`
+- **URL**: https://github.com/mikerockett/markup-sitemap
 - **Setup**: Install and configure. Exclude admin, 404, and utility templates.
 
 ### AllInOneMinify
@@ -28,7 +29,8 @@ All modules listed here are free and compatible with ProcessWire 3.0.229+ and PH
 
 ### CronjobDatabaseBackup
 - **Purpose**: Automated database backups on a schedule
-- **URL**: https://modules.processwire.com/modules/cronjob-database-backup/
+- **Install**: `git clone --depth 1 https://github.com/kixe/CronjobDatabaseBackup.git site/modules/CronjobDatabaseBackup`
+- **URL**: https://github.com/kixe/CronjobDatabaseBackup
 - **Setup**: Configure backup frequency and retention.
 
 ### TracyDebugger
@@ -91,7 +93,7 @@ All modules listed here are free and compatible with ProcessWire 3.0.229+ and PH
 
 ### TextformatterVideoEmbed
 - **Purpose**: Auto-embed YouTube/Vimeo videos from URLs in textarea fields
-- **URL**: https://modules.processwire.com/modules/textformatter-video-embed/
+- **URL**: Ships with ProcessWire (core module, just enable it)
 
 ## Navigation & Structure
 
@@ -158,6 +160,30 @@ See `.claude/instructions/ecommerce-guide.md` for full details.
 See `.claude/instructions/blog-setup.md` for architecture details.
 
 No specific module needed — ProcessWire's native page structure handles blogs perfectly with the right template setup.
+
+## Module Installation Method
+
+**Always clone from the host machine**, not from inside the Docker container (Docker DNS can't resolve GitHub). Use `--depth 1` for shallow clones.
+
+```bash
+# From the project root on the HOST machine
+git clone --depth 1 <repo-url> site/modules/<ModuleName>
+```
+
+**To activate modules after download**, create a temporary web-accessible PHP script in `site/templates/` that calls `$modules->refresh()` then `$modules->install('ModuleName')`. Run it via curl or browser as a logged-in superuser, then delete it. The PW CLI bootstrap is unreliable with environment-aware config files because `$_SERVER['HTTP_HOST']` is not set in CLI context.
+
+**Alternatively for CLI**, set the HTTP_HOST before bootstrapping:
+```bash
+docker exec <container> bash -c '
+export HTTP_HOST=localhost:8080
+php -d variables_order=EGPCS -r "
+\$_SERVER[\"HTTP_HOST\"] = \"localhost:8080\";
+include \"/var/www/html/index.php\";
+wire(\"modules\")->refresh();
+wire(\"modules\")->install(\"ModuleName\");
+"
+'
+```
 
 ## Module Installation Checklist
 

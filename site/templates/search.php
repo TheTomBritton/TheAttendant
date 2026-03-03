@@ -2,41 +2,52 @@
 
 /**
  * Template: search.php
- * Site search results using ProcessWire's built-in selector engine.
+ * Site search results — Filix inner page layout.
  * Fields: title, body, seo_title, seo_description
  */
 
 $browser_title = 'Search';
-$content = renderBreadcrumbs($page);
-
-$content .= "<h1>{$page->title}</h1>";
-
-// Search form — also works with HTMX for live results
 $q = $sanitizer->text($input->get('q', 'text'));
-$content .= "<form action='{$page->url}' method='get' class='search-form'>";
-$content .= "<div class='search-input-group'>";
-$content .= "<input type='search' name='q' value='" . $sanitizer->entities($q) . "' placeholder='Search the site&hellip;' aria-label='Search' required>";
-$content .= "<button type='submit' class='btn'>Search</button>";
+
+// Banner
+$hero = renderInnerBanner($page->title, '', 'contact_banner');
+
+// Content — search form and results
+$content = "<section class='blog_wrap pd_120'>";
+$content .= "<div class='container'>";
+$content .= "<div class='row justify-content-center'>";
+$content .= "<div class='col-lg-8 col-md-12'>";
+
+$content .= renderBreadcrumbs($page);
+
+// Search form
+$content .= "<form action='{$page->url}' method='get' class='search-form wow fadeInUp'>";
+$content .= "<div class='row'>";
+$content .= "<div class='col-lg-9 col-md-8 col-sm-8 col-12 form-group'>";
+$content .= "<input type='search' name='q' value='" . $sanitizer->entities($q) . "' class='form-control' placeholder='Search the site&hellip;' required>";
+$content .= "</div>";
+$content .= "<div class='col-lg-3 col-md-4 col-sm-4 col-12 form-group'>";
+$content .= "<input type='submit' class='sibmit_btn' value='Search'>";
+$content .= "</div>";
 $content .= "</div>";
 $content .= "</form>";
 
-// Perform search if query provided
+// Search results
 if ($q) {
     $q_selector = $sanitizer->selectorValue($q);
     $results = $pages->find("title|body|summary%=$q_selector, template!=admin, template!=blog-rss, template!=blog-tag, has_parent!={$config->adminRootPageID}, limit=20, sort=-modified");
 
     $browser_title = "Search: {$q}";
-    $content .= "<p class='search-meta'>";
-    $content .= $results->getTotal() . " result" . ($results->getTotal() !== 1 ? 's' : '') . " for <strong>" . $sanitizer->entities($q) . "</strong>";
+    $count = $results->getTotal();
+    $content .= "<p class='wow fadeInUp'>";
+    $content .= "{$count} result" . ($count !== 1 ? 's' : '') . " for <strong>" . $sanitizer->entities($q) . "</strong>";
     $content .= "</p>";
 
     if ($results->count()) {
-        $content .= "<div class='search-results'>";
         foreach ($results as $result) {
-            $content .= "<article class='search-result'>";
-            $content .= "<h2><a href='{$result->url}'>{$result->title}</a></h2>";
+            $content .= "<div class='search-result-item wow fadeInUp'>";
+            $content .= "<h3><a href='{$result->url}'>{$result->title}</a></h3>";
 
-            // Show a snippet: summary if available, otherwise truncate body
             $snippet = $result->get('summary|');
             if (!$snippet && $result->body) {
                 $snippet = truncate(strip_tags($result->body), 200);
@@ -45,12 +56,19 @@ if ($q) {
                 $content .= "<p>{$snippet}</p>";
             }
 
-            $content .= "<a href='{$result->url}' class='result-url'>{$result->url}</a>";
-            $content .= "</article>";
+            $content .= "<span class='result-url'>{$result->url}</span>";
+            $content .= "</div>";
         }
-        $content .= "</div>";
         $content .= renderPagination($results);
     } else {
-        $content .= "<p>No results found. Try different keywords.</p>";
+        $content .= "<p class='wow fadeInUp'>No results found. Try different keywords.</p>";
     }
 }
+
+$content .= "</div>"; // .col-lg-8
+$content .= "</div>"; // .row
+$content .= "</div>"; // .container
+$content .= "</section>";
+
+// No sidebar for search
+$sidebar = '';

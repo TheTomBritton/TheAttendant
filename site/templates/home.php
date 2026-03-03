@@ -2,33 +2,42 @@
 
 /**
  * Template: home.php
- * The homepage — hero section + latest blog posts.
+ * Homepage — Filix hero banner + latest blog posts.
  * Fields: title, body, summary, featured_image
  */
 
-// Hero section
-$hero = "<section class='hero'>";
+// Hero banner
+$hero = "<section class='hero_warp'>";
 $hero .= "<div class='container'>";
-$hero .= "<h1>{$page->title}</h1>";
+$hero .= "<div class='row d-flex align-items-center'>";
+$hero .= "<div class='col-md-12 col-12'>";
+$hero .= "<div class='banner_content'>";
+$hero .= "<h1 class='banner_title'>{$page->title}</h1>";
 if ($page->summary) {
-    $hero .= "<p class='lead'>{$page->summary}</p>";
+    $hero .= "<p class='banner_para wow fadeInUp'>{$page->summary}</p>";
 }
+$hero .= "</div>";
+$hero .= "</div>";
+$hero .= "</div>";
 $hero .= "</div>";
 $hero .= "</section>";
 
-// Main content
-$content = '';
+// Main content — blog listing style
+$content = "<section class='blog_wrap pd_120'>";
+$content .= "<div class='container'>";
 
 if ($page->body) {
-    $content .= "<div class='intro'>{$page->body}</div>";
+    $content .= "<div class='row'><div class='col-12'>";
+    $content .= "<div class='wow fadeInUp'>{$page->body}</div>";
+    $content .= "</div></div>";
 }
 
 // Latest blog posts
 $latestPosts = $pages->find("template=blog-post, sort=-date, limit=6");
 if ($latestPosts->count()) {
-    $content .= "<section class='latest-posts'>";
-    $content .= "<h2>Latest Posts</h2>";
-    $content .= "<div class='posts-grid'>";
+    $content .= "<div class='row justify-content-center'>";
+    $content .= "<div class='col-lg-8 col-md-12 col-sm-12 col-xs-12'>";
+    $content .= "<div class='blog_content'>";
     foreach ($latestPosts as $post) {
         $content .= renderPostCard($post);
     }
@@ -36,19 +45,24 @@ if ($latestPosts->count()) {
 
     $blogIndex = $pages->get('template=blog-index');
     if ($blogIndex->id) {
-        $content .= "<p class='view-all'><a href='{$blogIndex->url}' class='btn'>View all posts</a></p>";
+        $content .= "<div class='text-center wow fadeInUp' style='margin-top: 40px;'>";
+        $content .= "<a href='{$blogIndex->url}' class='read_more'>View all posts</a>";
+        $content .= "</div>";
     }
-    $content .= "</section>";
+    $content .= "</div>"; // .col-lg-8
+
+    // Sidebar with recent posts + categories
+    $content .= "<div class='col-lg-4 col-md-12 col-sm-12 col-xs-12'>";
+    $content .= "<div class='blog_sidebar'>";
+    $content .= renderBlogSidebar($page);
+    $content .= "</div>";
+    $content .= "</div>";
+
+    $content .= "</div>"; // .row
 }
 
-// Feature child pages as cards (About, etc.)
-$children = $page->children('limit=6, template!=blog-index');
-if ($children->count()) {
-    $content .= "<section class='featured-pages'>";
-    $content .= "<div class='card-grid'>";
-    foreach ($children as $child) {
-        $content .= renderPageCard($child);
-    }
-    $content .= "</div>";
-    $content .= "</section>";
-}
+$content .= "</div>"; // .container
+$content .= "</section>";
+
+// Override sidebar to empty — home handles its own layout
+$sidebar = '';

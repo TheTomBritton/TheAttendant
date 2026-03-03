@@ -2,58 +2,51 @@
 
 /**
  * Template: basic-page.php
- * A generic content page with optional featured image and sidebar.
+ * Generic content page — Filix inner page with optional sidebar.
  * Fields: title, body, summary, featured_image, images
  */
 
-// Breadcrumbs
-$content = renderBreadcrumbs($page);
+// Banner
+$subtitle = $page->summary ?: '';
+$hero = renderInnerBanner($page->title, $subtitle, 'contact_banner');
 
-// Page heading
-$content .= "<h1>{$page->title}</h1>";
+// Content
+$content = '';
+$content .= renderBreadcrumbs($page);
 
-// Featured image (above the fold — no lazy loading)
+// Featured image
 if ($page->featured_image) {
-    $content .= "<figure class='featured-image'>";
+    $content .= "<div class='blog_simg_img wow fadeInUp'>";
     $content .= renderImage($page->featured_image, [600, 900, 1200], '100vw', false);
-    if ($page->featured_image->description) {
-        $content .= "<figcaption>{$page->featured_image->description}</figcaption>";
-    }
-    $content .= "</figure>";
+    $content .= "</div>";
 }
 
 // Body content
 if ($page->body) {
-    $content .= "<div class='body-content'>{$page->body}</div>";
+    $content .= "<div class='blog_single_item wow fadeInUp'>";
+    $content .= $page->body;
+    $content .= "</div>";
 }
 
 // Image gallery
 if ($page->images && $page->images->count()) {
-    $content .= "<section class='gallery'>";
-    $content .= "<h2>Gallery</h2>";
-    $content .= "<div class='gallery-grid'>";
+    $content .= "<div class='blog_simg_img wow fadeInUp'>";
     foreach ($page->images as $img) {
-        $thumb = $img->size(400, 300);
-        $content .= "<figure>";
-        $content .= "<a href='{$img->width(1600)->url}'>";
-        $content .= "<img src='{$thumb->url}' alt='{$img->description}' width='400' height='300' loading='lazy'>";
-        $content .= "</a>";
-        if ($img->description) {
-            $content .= "<figcaption>{$img->description}</figcaption>";
-        }
-        $content .= "</figure>";
+        $thumb = $img->width(800);
+        $content .= "<img src='{$thumb->url}' alt='" . $sanitizer->entities($img->description) . "' class='img-fluid' style='margin-bottom: 15px;'>";
     }
     $content .= "</div>";
-    $content .= "</section>";
 }
 
 // Sidebar: child pages or sibling pages
 $sidebarPages = $page->children->count() ? $page->children : $page->siblings("id!={$page->id}, limit=5");
 if ($sidebarPages->count()) {
-    $sidebar = "<h3>Related Pages</h3>";
+    $sidebar = "<div class='widget sidebar-widget widget_tags wow fadeInUp'>";
+    $sidebar .= "<h2 class='widget_title'>Related Pages</h2>";
     $sidebar .= "<ul>";
     foreach ($sidebarPages as $item) {
         $sidebar .= "<li><a href='{$item->url}'>{$item->title}</a></li>";
     }
     $sidebar .= "</ul>";
+    $sidebar .= "</div>";
 }

@@ -4,17 +4,11 @@
  * _func.php — Reusable helper functions
  *
  * Included by _init.php, available in all templates.
- * Add project-specific helper functions here.
+ * Outputs Filix theme-compatible markup.
  */
 
 /**
  * Render a responsive image with srcset and lazy loading
- *
- * @param Pageimage|null $image The image to render
- * @param array $widths Widths to generate for srcset
- * @param string $sizes The sizes attribute value
- * @param bool $lazy Whether to lazy load (false for above-fold images)
- * @return string HTML markup
  */
 function renderImage(?Pageimage $image, array $widths = [400, 800, 1200], string $sizes = '100vw', bool $lazy = true): string {
     if (!$image) return '';
@@ -34,9 +28,6 @@ function renderImage(?Pageimage $image, array $widths = [400, 800, 1200], string
 
 /**
  * Render breadcrumb navigation with schema markup
- *
- * @param Page $page Current page
- * @return string HTML breadcrumb markup
  */
 function renderBreadcrumbs(Page $page): string {
     if ($page->id === wire('pages')->get('/')->id) return '';
@@ -69,7 +60,7 @@ function renderBreadcrumbs(Page $page): string {
     ], JSON_UNESCAPED_SLASHES);
 
     $out = "<nav aria-label='Breadcrumb'>";
-    $out .= "<ol class='breadcrumbs'>" . implode('', $items) . "</ol>";
+    $out .= "<ol>" . implode('', $items) . "</ol>";
     $out .= "</nav>";
     $out .= "<script type='application/ld+json'>{$schema}</script>";
 
@@ -78,11 +69,6 @@ function renderBreadcrumbs(Page $page): string {
 
 /**
  * Truncate text to a given length, respecting word boundaries
- *
- * @param string $text Text to truncate
- * @param int $length Maximum character length
- * @param string $suffix Appended when truncated
- * @return string
  */
 function truncate(string $text, int $length = 160, string $suffix = '&hellip;'): string {
     $text = strip_tags($text);
@@ -97,83 +83,156 @@ function truncate(string $text, int $length = 160, string $suffix = '&hellip;'):
 
 /**
  * Get primary navigation pages
- *
- * @return PageArray
  */
 function getNavPages(): PageArray {
     return wire('pages')->get('/')->children();
 }
 
 /**
- * Render a page card for listings
- *
- * @param Page $item The page to render as a card
- * @param bool $showImage Whether to show the featured image
- * @param bool $showSummary Whether to show the summary
- * @return string HTML markup
+ * Render a blog post card — Filix blog_post markup
  */
-function renderPageCard(Page $item, bool $showImage = true, bool $showSummary = true): string {
-    $out = "<article class='card'>";
+function renderPostCard(Page $post): string {
+    $distUrl = wire('config')->urls->assets . 'dist/';
 
-    if ($showImage && $item->featured_image) {
-        $thumb = $item->featured_image->size(600, 400);
-        $out .= "<a href='{$item->url}' class='card-image'>";
-        $out .= "<img src='{$thumb->url}' alt='{$thumb->description}' width='600' height='400' loading='lazy'>";
-        $out .= "</a>";
+    $out = "<div class='blog_single_item wow fadeInUp'>";
+    $out .= "<div class='blog_post'>";
+
+    // Post image
+    if ($post->featured_image) {
+        $thumb = $post->featured_image->width(800);
+        $out .= "<div class='post_img'>";
+        $out .= "<a href='{$post->url}'><img src='{$thumb->url}' alt='" . wire('sanitizer')->entities($thumb->description) . "'></a>";
+        $out .= "</div>";
     }
 
-    $out .= "<div class='card-body'>";
-    $out .= "<h3><a href='{$item->url}'>{$item->title}</a></h3>";
+    $out .= "<div class='post_content'>";
 
-    if ($showSummary && $item->summary) {
-        $out .= "<p>" . truncate($item->summary, 120) . "</p>";
+    // Post info (author + date)
+    $date = date('j F Y', $post->getUnformatted('date'));
+    $out .= "<ul class='post_info'>";
+    if ($post->blog_author && $post->blog_author->id) {
+        $out .= "<li><span class='author'>by {$post->blog_author->title}</span></li>";
+    }
+    $out .= "<li class='float-right'><span class='post_time'><img src='{$distUrl}images/svg/timetable.svg' alt='icon'>{$date}</span></li>";
+    $out .= "</ul>";
+
+    // Title
+    $out .= "<h3 class='post_title'><a href='{$post->url}'>{$post->title}</a></h3>";
+
+    // Summary
+    if ($post->summary) {
+        $out .= "<p class='post_details'>" . truncate($post->summary, 200) . "</p>";
     }
 
-    $out .= "<a href='{$item->url}' class='card-link'>Read more</a>";
-    $out .= "</div>";
-    $out .= "</article>";
+    $out .= "<a href='{$post->url}' class='read_more'>Explore</a>";
+    $out .= "</div>"; // .post_content
+    $out .= "</div>"; // .blog_post
+    $out .= "</div>"; // .blog_single_item
 
     return $out;
 }
 
 /**
- * Render a blog post card for listings
+ * Render a page card — Filix blog_post style for generic pages
  */
-function renderPostCard(Page $post): string {
-    $out = "<article class='post-card'>";
+function renderPageCard(Page $item, bool $showImage = true, bool $showSummary = true): string {
+    $out = "<div class='blog_single_item wow fadeInUp'>";
+    $out .= "<div class='blog_post'>";
 
-    if ($post->featured_image) {
-        $thumb = $post->featured_image->size(600, 400);
-        $out .= "<a href='{$post->url}' class='post-card-image'>";
-        $out .= "<img src='{$thumb->url}' alt='" . wire('sanitizer')->entities($thumb->description) . "' width='600' height='400' loading='lazy'>";
-        $out .= "</a>";
-    }
-
-    $out .= "<div class='post-card-body'>";
-
-    // Category badges
-    if ($post->blog_categories && $post->blog_categories->count()) {
-        $out .= "<div class='post-card-categories'>";
-        foreach ($post->blog_categories as $cat) {
-            $out .= "<a href='{$cat->url}' class='category-badge'>{$cat->title}</a> ";
-        }
+    if ($showImage && $item->featured_image) {
+        $thumb = $item->featured_image->width(800);
+        $out .= "<div class='post_img'>";
+        $out .= "<a href='{$item->url}'><img src='{$thumb->url}' alt='" . wire('sanitizer')->entities($thumb->description) . "'></a>";
         $out .= "</div>";
     }
 
-    $out .= "<h2><a href='{$post->url}'>{$post->title}</a></h2>";
+    $out .= "<div class='post_content'>";
+    $out .= "<h3 class='post_title'><a href='{$item->url}'>{$item->title}</a></h3>";
 
-    // Date
-    $date = date('j F Y', $post->getUnformatted('date'));
-    $out .= "<time datetime='" . date('Y-m-d', $post->getUnformatted('date')) . "'>{$date}</time>";
-
-    if ($post->summary) {
-        $out .= "<p>" . truncate($post->summary, 150) . "</p>";
+    if ($showSummary && $item->summary) {
+        $out .= "<p class='post_details'>" . truncate($item->summary, 150) . "</p>";
     }
 
-    $out .= "<a href='{$post->url}' class='read-more'>Read more</a>";
-    $out .= "</div></article>";
+    $out .= "<a href='{$item->url}' class='read_more'>Explore</a>";
+    $out .= "</div>";
+    $out .= "</div>";
+    $out .= "</div>";
 
     return $out;
+}
+
+/**
+ * Render pagination — Filix pagination_content style
+ */
+function renderPagination(\ProcessWire\PageArray $items): string {
+    return $items->renderPager([
+        'nextItemLabel' => '<i class="arrow_right"></i>',
+        'previousItemLabel' => '<i class="arrow_left"></i>',
+        'listMarkup' => '<div class="pagination_content wow fadeInUp"><nav class="navigation"><ul class="pagination text-center">{out}</ul></nav></div>',
+        'itemMarkup' => '<li class="{class}">{out}</li>',
+        'linkMarkup' => '<a href="{url}">{out}</a>',
+        'currentItemClass' => 'active',
+    ]);
+}
+
+/**
+ * Render sidebar widgets — categories, recent posts, tags
+ */
+function renderBlogSidebar(Page $currentPage = null): string {
+    $pages = wire('pages');
+    $distUrl = wire('config')->urls->assets . 'dist/';
+    $sidebar = '';
+
+    // Recent posts widget
+    $recentPosts = $pages->find("template=blog-post, sort=-date, limit=3");
+    if ($recentPosts->count()) {
+        $sidebar .= "<div class='widget sidebar-widget widget_recent_post wow fadeInUp'>";
+        $sidebar .= "<h2 class='widget_title'>Recent Posts</h2>";
+        foreach ($recentPosts as $rp) {
+            $sidebar .= "<div class='media'>";
+            if ($rp->featured_image) {
+                $rpThumb = $rp->featured_image->size(80, 80);
+                $sidebar .= "<div class='media-left'><a href='{$rp->url}'><img class='media-object' src='{$rpThumb->url}' alt='" . wire('sanitizer')->entities($rpThumb->description) . "'></a></div>";
+            }
+            $sidebar .= "<div class='media-body'>";
+            $sidebar .= "<h6 class='tn_tittle'><a href='{$rp->url}'>{$rp->title}</a></h6>";
+            $rpDate = date('j F Y', $rp->getUnformatted('date'));
+            $sidebar .= "<ul class='recent_post_meta'><li><a href='{$rp->url}'>{$rpDate}</a></li></ul>";
+            $sidebar .= "</div>";
+            $sidebar .= "</div>";
+        }
+        $sidebar .= "</div>";
+    }
+
+    // Categories widget
+    $categories = $pages->find("template=blog-category, sort=title");
+    if ($categories->count()) {
+        $sidebar .= "<div class='widget sidebar-widget widget_tags wow fadeInUp'>";
+        $sidebar .= "<h2 class='widget_title'>Categories</h2>";
+        $sidebar .= "<ul>";
+        foreach ($categories as $cat) {
+            $postCount = $pages->count("template=blog-post, blog_categories=$cat");
+            $sidebar .= "<li><a href='{$cat->url}'>{$cat->title} <span>({$postCount})</span></a></li>";
+        }
+        $sidebar .= "</ul>";
+        $sidebar .= "</div>";
+    }
+
+    // Tags widget
+    $blogIndex = $pages->get('template=blog-index');
+    $tags = $pages->find("template=blog-tag, sort=title");
+    if ($tags->count() && $blogIndex->id) {
+        $sidebar .= "<div class='widget sidebar-widget widget_tags wow fadeInUp'>";
+        $sidebar .= "<h2 class='widget_title'>Tags</h2>";
+        $sidebar .= "<ul>";
+        foreach ($tags as $tag) {
+            $sidebar .= "<li><a href='{$blogIndex->url}tag/{$tag->name}/'>{$tag->title}</a></li>";
+        }
+        $sidebar .= "</ul>";
+        $sidebar .= "</div>";
+    }
+
+    return $sidebar;
 }
 
 /**
@@ -205,15 +264,26 @@ function renderArticleSchema(Page $page): string {
 }
 
 /**
- * Render pagination controls with Tailwind classes
+ * Render the inner page banner — Filix hero_warp inner_banner
  */
-function renderPagination(\ProcessWire\PageArray $items): string {
-    return $items->renderPager([
-        'nextItemLabel' => 'Next &rarr;',
-        'previousItemLabel' => '&larr; Previous',
-        'listMarkup' => '<nav aria-label="Pagination"><ul class="pagination">{out}</ul></nav>',
-        'itemMarkup' => '<li class="{class}">{out}</li>',
-        'linkMarkup' => '<a href="{url}">{out}</a>',
-        'currentItemClass' => 'active',
-    ]);
+function renderInnerBanner(string $title, string $subtitle = '', string $extraClass = ''): string {
+    $classes = "hero_warp inner_banner";
+    if ($extraClass) $classes .= " {$extraClass}";
+
+    $out = "<section class='{$classes}'>";
+    $out .= "<div class='container'>";
+    $out .= "<div class='row d-flex align-items-center'>";
+    $out .= "<div class='col-md-12 col-12'>";
+    $out .= "<div class='banner_content'>";
+    $out .= "<h1 class='banner_title'>{$title}</h1>";
+    if ($subtitle) {
+        $out .= "<p class='banner_para wow fadeInUp'>{$subtitle}</p>";
+    }
+    $out .= "</div>";
+    $out .= "</div>";
+    $out .= "</div>";
+    $out .= "</div>";
+    $out .= "</section>";
+
+    return $out;
 }

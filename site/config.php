@@ -1,10 +1,9 @@
 <?php namespace ProcessWire;
 
 /**
- * ProcessWire Configuration
+ * ProcessWire Configuration — Sound M8
  *
- * This file is environment-aware: it detects local vs production
- * and applies appropriate settings automatically.
+ * Environment-aware: detects local Docker vs production.
  */
 
 // ──────────────────────────────────────────────
@@ -21,12 +20,12 @@ $isLocal = in_array($_SERVER['HTTP_HOST'] ?? '', [
 // Database
 // ──────────────────────────────────────────────
 if ($isLocal) {
-    $config->dbHost = 'db';           // Docker service name
-    $config->dbName = 'pw_dev';
-    $config->dbUser = 'pw_user';
-    $config->dbPass = 'pw_password';
+    $config->dbHost = 'db';
+    $config->dbName = 'sound_m8';
+    $config->dbUser = 'sound_m8_user';
+    $config->dbPass = 'sound_m8_dev_pass';
 } else {
-    // Production — update these with Krystal credentials
+    // Production — update with Krystal credentials
     $config->dbHost = 'localhost';
     $config->dbName = 'CHANGE_ME';
     $config->dbUser = 'CHANGE_ME';
@@ -58,8 +57,13 @@ $config->timezone = 'Europe/London';
 $config->advanced = false;
 $config->adminEmail = 'admin@yourdomain.com';
 
-// Authentication salt — CHANGE THIS to a unique random string
-$config->userAuthSalt = 'CHANGE-THIS-TO-A-UNIQUE-64-CHARACTER-RANDOM-STRING';
+// ──────────────────────────────────────────────
+// Installer-generated values (do not change)
+// ──────────────────────────────────────────────
+$config->userAuthSalt = '1e783c200b79c0e7beac7723a8aff6d92934d425';
+$config->tableSalt = '1e783c200b79c0e7beac7723a8aff6d92934d425';
+$config->installed = 1772491628;
+$config->sessionName = 'pw751';
 
 // ──────────────────────────────────────────────
 // Session
@@ -78,10 +82,12 @@ $config->appendTemplateFile = '_main.php';
 // ──────────────────────────────────────────────
 // File & Image Settings
 // ──────────────────────────────────────────────
-$config->imageSizerOptions('webpAdd', true);  // Auto-generate WebP variants
+$config->chmodDir = '0755';
+$config->chmodFile = '0644';
+$config->imageSizerOptions('webpAdd', true);
 
 // ──────────────────────────────────────────────
 // Admin
 // ──────────────────────────────────────────────
-// Uncomment and change for production (security hardening)
-// $config->urls->admin = '/your-custom-admin/';
+$config->defaultAdminTheme = 'AdminThemeUikit';
+$config->AdminThemeUikit('themeName', 'default');

@@ -3,15 +3,18 @@
 /**
  * _main.php — Auto-appended after every template
  *
- * This is the main HTML wrapper. Templates set region variables
+ * Filix theme shell. Templates set region variables
  * ($content, $sidebar, $hero, etc.) and this file outputs them
  * inside the page shell.
  */
+
+$distUrl = $config->urls->assets . 'dist/';
 ?><!DOCTYPE html>
 <html lang="en-GB">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="shortcut icon" href="<?= $distUrl ?>images/favicon.png" type="image/x-icon">
 
     <title><?= $sanitizer->entities($browser_title) ?><?= $page->id !== $home->id ? " | {$site_name}" : '' ?></title>
     <meta name="description" content="<?= $sanitizer->entities($meta_description) ?>">
@@ -32,133 +35,173 @@
     <link rel="alternate" type="application/rss+xml" title="<?= $site_name ?> Blog" href="<?= $blogRss->httpUrl ?>">
     <?php endif; ?>
 
-    <!-- Styles -->
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="<?= $distUrl ?>css/bootstrap.css">
+
+    <!-- Icon CSS -->
+    <link rel="stylesheet" href="<?= $distUrl ?>css/font-awesome.min.css">
+    <link rel="stylesheet" href="<?= $distUrl ?>css/font-awesome-animation.min.css">
+    <link rel="stylesheet" href="<?= $distUrl ?>css/themify-icons.css">
+    <link rel="stylesheet" href="<?= $distUrl ?>css/elegant-icon-style.css">
+
+    <!-- Plugin CSS -->
+    <link rel="stylesheet" href="<?= $distUrl ?>css/slick.css">
+    <link rel="stylesheet" href="<?= $distUrl ?>css/slick-theme.css">
+    <link rel="stylesheet" href="<?= $distUrl ?>css/animated.css">
+
+    <!-- Filix theme CSS -->
+    <link rel="stylesheet" href="<?= $distUrl ?>css/style.css">
+    <link rel="stylesheet" href="<?= $distUrl ?>css/responsive.css">
+
+    <!-- Sound M8 overrides -->
     <?php
-    $cssFile = $config->paths->assets . 'dist/app.css';
+    $cssFile = $config->paths->assets . 'src/app.css';
     $cssVersion = file_exists($cssFile) ? filemtime($cssFile) : '1';
     ?>
-    <link rel="stylesheet" href="<?= $config->urls->assets ?>dist/app.css?v=<?= $cssVersion ?>">
+    <link rel="stylesheet" href="<?= $config->urls->assets ?>src/app.css?v=<?= $cssVersion ?>">
 
     <?= $extra_head ?>
 </head>
-<body class="<?= $body_class ?>">
+<body id="top" class="<?= $body_class ?>">
 
-    <!-- Skip navigation -->
-    <a href="#content" class="sr-only focus:not-sr-only">Skip to content</a>
-
-    <!-- Site header -->
-    <header role="banner">
-        <div class="container">
-            <a href="<?= $home->url ?>" class="site-logo" aria-label="<?= $site_name ?> — Home">
-                <?= $site_name ?>
-            </a>
-
-            <nav aria-label="Main navigation">
-                <ul>
-                    <?php foreach ($home->children() as $item): ?>
-                    <li>
-                        <a href="<?= $item->url ?>"<?= ($page->rootParent->id === $item->id || $page->id === $item->id) ? ' aria-current="page"' : '' ?>>
-                            <?= $item->title ?>
+    <!-- Header -->
+    <header class="header">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-lg-12 col-12">
+                    <nav class="navbar">
+                        <a class="navbar-brand logo" href="<?= $home->url ?>">
+                            <span class="logo_text"><?= $site_name ?></span>
                         </a>
-                    </li>
-                    <?php endforeach; ?>
-                </ul>
-            </nav>
-
-            <?php $searchPage = $pages->get('template=search'); ?>
-            <?php if ($searchPage->id): ?>
-            <a href="<?= $searchPage->url ?>" class="nav-search-link" aria-label="Search">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            </a>
-            <?php endif; ?>
-
-            <button class="mobile-menu-btn" aria-label="Toggle menu" aria-expanded="false">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
+                        <button class="navbar-toggler hamburger" type="button" data-toggle="collapse" data-target="#header_menu">
+                            <span class="m_menu">Menu</span>
+                            <span class="m_close">Close</span>
+                            <span class="bar_icon">
+                                <span class="bar bar_1"></span>
+                                <span class="bar bar_2"></span>
+                                <span class="bar bar_3"></span>
+                            </span>
+                        </button>
+                        <div class="opnen_menu">
+                            <div class="header_main_menu">
+                                <ul class="menu_item">
+                                    <li><a href="<?= $home->url ?>">Home</a></li>
+                                    <?php foreach ($home->children() as $item): ?>
+                                    <li><a href="<?= $item->url ?>"><?= $item->title ?></a></li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="sub_footer">
+                            <ul class="footer_social text-center">
+                                <li>
+                                    <a href="#">
+                                        <i class="fa fa-facebook"></i>
+                                        <i class="fa fa-facebook"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#">
+                                        <i class="fa fa-twitter"></i>
+                                        <i class="fa fa-twitter"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#">
+                                        <i class="fa fa-instagram"></i>
+                                        <i class="fa fa-instagram"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </nav>
+                </div>
+            </div>
         </div>
     </header>
 
-    <!-- Mobile navigation -->
-    <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation">
-        <ul>
-            <?php foreach ($home->children() as $item): ?>
-            <li>
-                <a href="<?= $item->url ?>"<?= ($page->rootParent->id === $item->id || $page->id === $item->id) ? ' aria-current="page"' : '' ?>>
-                    <?= $item->title ?>
-                </a>
-            </li>
-            <?php endforeach; ?>
-            <?php if ($searchPage->id): ?>
-            <li>
-                <a href="<?= $searchPage->url ?>">Search</a>
-            </li>
-            <?php endif; ?>
-        </ul>
-    </nav>
-
     <?php if ($hero): ?>
-    <!-- Hero / Banner -->
     <?= $hero ?>
     <?php endif; ?>
 
-    <!-- Main content -->
-    <main id="content">
+    <?php if ($sidebar): ?>
+    <!-- Content with sidebar -->
+    <section class="blog_wrap pd_120">
         <div class="container">
-            <?php if ($sidebar): ?>
-            <div class="layout-with-sidebar">
-                <div class="main-content">
-                    <?= $content ?>
+            <div class="row justify-content-center">
+                <div class="col-lg-8 col-md-12 col-sm-12 col-xs-12">
+                    <div class="blog_content">
+                        <?= $content ?>
+                    </div>
                 </div>
-                <aside role="complementary">
-                    <?= $sidebar ?>
-                </aside>
+                <div class="col-lg-4 col-md-12 col-sm-12 col-xs-12">
+                    <div class="blog_sidebar">
+                        <?= $sidebar ?>
+                    </div>
+                </div>
             </div>
-            <?php else: ?>
-                <?= $content ?>
-            <?php endif; ?>
         </div>
-    </main>
+    </section>
+    <?php elseif ($content): ?>
+    <!-- Content without sidebar -->
+    <?= $content ?>
+    <?php endif; ?>
 
-    <!-- Site footer -->
-    <footer role="contentinfo">
+    <!-- Footer -->
+    <footer class="footer">
         <div class="container">
-            <p>&copy; <?= date('Y') ?> <?= $site_name ?>. All rights reserved.</p>
+            <div class="row">
+                <div class="col-md-12 col-12">
+                    <div class="footer_content">
+                        <div class="footer_logo text-center wow fadeInUp">
+                            <a href="<?= $home->url ?>"><span class="logo_text"><?= $site_name ?></span></a>
+                        </div>
+                        <h2 class="footer_title text-center wow fadeInUp">Let's Make <span>Something Great</span> Together</h2>
+                        <ul class="footer_social text-center wow fadeInUp">
+                            <li>
+                                <a href="#">
+                                    <i class="fa fa-facebook"></i>
+                                    <i class="fa fa-facebook"></i>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#">
+                                    <i class="fa fa-twitter"></i>
+                                    <i class="fa fa-twitter"></i>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#">
+                                    <i class="fa fa-instagram"></i>
+                                    <i class="fa fa-instagram"></i>
+                                </a>
+                            </li>
+                        </ul>
+                        <p class="footer_copy_right text-center wow fadeInUp">&copy; <?= date('Y') ?> <?= $site_name ?>. All rights reserved.</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </footer>
 
-    <!-- Scripts -->
-    <script src="<?= $config->urls->assets ?>dist/htmx.min.js" defer></script>
-    <?php
-    $jsFile = $config->paths->assets . 'dist/app.js';
-    if (file_exists($jsFile)):
-        $jsVersion = filemtime($jsFile);
-    ?>
-    <script src="<?= $config->urls->assets ?>dist/app.js?v=<?= $jsVersion ?>" defer></script>
-    <?php endif; ?>
+    <div class="go_to_top">
+        <a href="#top">
+            <i class="fa fa-angle-up"></i>
+            <i class="fa fa-angle-up"></i>
+        </a>
+    </div>
 
-    <!-- Mobile menu toggle -->
-    <script>
-    (function() {
-        var btn = document.querySelector('.mobile-menu-btn');
-        var nav = document.getElementById('mobile-nav');
-        if (!btn || !nav) return;
-        btn.addEventListener('click', function() {
-            var open = nav.classList.toggle('is-open');
-            btn.setAttribute('aria-expanded', open);
-            document.body.style.overflow = open ? 'hidden' : '';
-        });
-        // Close on link click
-        nav.querySelectorAll('a').forEach(function(a) {
-            a.addEventListener('click', function() {
-                nav.classList.remove('is-open');
-                btn.setAttribute('aria-expanded', 'false');
-                document.body.style.overflow = '';
-            });
-        });
-    })();
-    </script>
+    <!-- Scripts -->
+    <script src="<?= $distUrl ?>js/jquery-3.3.1.min.js"></script>
+    <script src="<?= $distUrl ?>js/bootstrap.min.js"></script>
+    <script src="<?= $distUrl ?>js/isotope.pkgd.min.js"></script>
+    <script src="<?= $distUrl ?>js/imagesloaded.pkgd.min.js"></script>
+    <script src="<?= $distUrl ?>js/slick.min.js"></script>
+    <script src="<?= $distUrl ?>js/wow.js"></script>
+    <script src="<?= $distUrl ?>js/parallax-scroll.js"></script>
+    <script src="<?= $distUrl ?>js/universal-tilt.js"></script>
+    <script src="<?= $distUrl ?>js/main.js"></script>
+    <script src="<?= $distUrl ?>htmx.min.js"></script>
 
     <?= $extra_foot ?>
 </body>

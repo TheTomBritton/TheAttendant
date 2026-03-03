@@ -2,36 +2,39 @@
 
 /**
  * Template: blog-category.php
- * Displays posts filtered by this category.
+ * Posts filtered by category — Filix blog-sidebar layout.
  * Fields: title, body, featured_image, seo_title, seo_description
  */
 
 $browser_title = $page->get('seo_title|title') . ' — Blog';
 $meta_description = $page->get('seo_description|body|');
 
-$content = renderBreadcrumbs($page);
+// Banner
+$hero = renderInnerBanner($page->title, '', 'contact_banner');
 
-$content .= "<h1>{$page->title}</h1>";
+// Content — post listing for this category
+$content = '';
+$content .= renderBreadcrumbs($page);
+
 if ($page->body) {
-    $content .= "<div class='category-description'>{$page->body}</div>";
+    $content .= "<div class='wow fadeInUp'>{$page->body}</div>";
 }
 
-// Posts in this category
 $posts = $pages->find("template=blog-post, blog_categories=$page, sort=-date, limit=12");
 
 if ($posts->count()) {
-    $content .= "<div class='posts-grid'>";
     foreach ($posts as $post) {
         $content .= renderPostCard($post);
     }
-    $content .= "</div>";
     $content .= renderPagination($posts);
 } else {
-    $content .= "<p>No posts in this category yet.</p>";
+    $content .= "<p class='wow fadeInUp'>No posts in this category yet.</p>";
 }
 
-// Link back to all posts
 $blogIndex = $pages->get('template=blog-index');
 if ($blogIndex->id) {
-    $content .= "<p><a href='{$blogIndex->url}'>&larr; View all posts</a></p>";
+    $content .= "<p class='wow fadeInUp'><a href='{$blogIndex->url}'>&larr; View all posts</a></p>";
 }
+
+// Sidebar
+$sidebar = renderBlogSidebar($page);

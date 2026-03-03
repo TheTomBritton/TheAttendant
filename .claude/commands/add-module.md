@@ -9,22 +9,34 @@ Install a free ProcessWire module, configure it with sensible defaults, and docu
 If the operator specifies a module, look it up. If they describe a need (e.g. "I need a form builder"), consult `.claude/instructions/module-recommendations.md` and recommend the best free option with reasoning.
 
 ### Step 2: Installation Method
-ProcessWire modules can be installed in several ways:
 
-**Via Composer (preferred if available):**
+**Via git clone from the HOST machine (preferred):**
 ```bash
-composer require <vendor>/<module-name>
+git clone --depth 1 <repo-url> site/modules/<ModuleName>
+```
+**IMPORTANT**: Always clone from the host machine, never from inside the Docker container. Docker containers typically cannot resolve GitHub DNS. The `site/modules/` directory is volume-mounted and immediately visible inside the container.
+
+**Via Composer (if available — less common for PW modules):**
+```bash
+docker exec <project>-web composer require <vendor>/<module-name>
 ```
 
-**Via PW Modules Directory:**
-Provide the download URL and instruct to place in `site/modules/<ModuleName>/`
-
-**Via Git submodule (if on GitHub):**
+### Step 2b: Activate the Module
+After downloading, activate via PW CLI with HTTP_HOST set:
 ```bash
-git submodule add <repo-url> site/modules/<ModuleName>
+docker exec <project>-web bash -c '
+export HTTP_HOST=localhost:8080
+php -d variables_order=EGPCS -r "
+\$_SERVER[\"HTTP_HOST\"] = \"localhost:8080\";
+include \"/var/www/html/index.php\";
+wire(\"modules\")->refresh();
+wire(\"modules\")->install(\"<ModuleName>\");
+echo \"Installed <ModuleName>\n\";
+"
+'
 ```
 
-Always check if the module is available via Composer first. If not, provide the GitHub/modules directory URL.
+Or for batch installs, create a temporary `site/templates/run-modules.php` script that loops through module names calling `$modules->refresh()` then `$modules->install()`. Delete after use.
 
 ### Step 3: Configuration
 After installation, provide:
