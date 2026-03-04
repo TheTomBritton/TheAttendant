@@ -53,75 +53,36 @@ PW_ADMIN_PASS=change-this-password
 ### First Time Setup
 
 ```bash
-# 1. Clone the repo and create a project branch
+# 1. Clone the repo
 git clone https://github.com/yourusername/project-name.git my-client-site
 cd my-client-site
-git checkout -b my-project-name
 
-# 2. Configure Docker environment
+# 2. Install PW core via Composer
+composer install
+
+# 3. Install frontend dependencies
+npm install
+
+# 4. Configure Docker environment
 cp docker/.env.example docker/.env
 # Edit docker/.env with your project name and credentials
 
-# 3. Install frontend dependencies (host machine)
-npm install
-
-# 4. Start Docker
+# 5. Start Docker
 cd docker
 docker compose up -d --build
-cd ..
 
-# 5. Install PW core via Composer INSIDE the container
-docker exec <project>-web composer install --no-interaction
-
-# 6. Bootstrap PW files in the web root (see below)
+# 6. Wait for services to start (10-15 seconds)
+docker compose logs -f  # Watch logs, Ctrl+C to exit
 
 # 7. Visit http://localhost:8080 to run the PW installer
 ```
 
-### Bootstrapping ProcessWire (Critical First-Run Steps)
+### ProcessWire Installation (First Run)
 
-Composer installs ProcessWire into `vendor/processwire/processwire/`. The web root needs several files that PW expects at the top level. **Run these inside the container after `composer install`:**
-
-```bash
-docker exec <project>-web bash -c '
-cd /var/www/html
-
-# Symlink the wire directory (PW core)
-ln -sf vendor/processwire/processwire/wire wire
-
-# Copy (not symlink) index.php — symlinks cause path detection issues
-cp vendor/processwire/processwire/index.php index.php
-cp vendor/processwire/processwire/install.php install.php
-cp vendor/processwire/processwire/htaccess.txt .htaccess
-
-# The PW installer needs the blank profile install files
-cp vendor/processwire/processwire/site-blank/install/install.sql site/install/install.sql
-cp vendor/processwire/processwire/site-blank/install/info.php site/install/info.php
-cp -r vendor/processwire/processwire/site-blank/install/files site/install/files
-
-# Copy admin.php template (required for PW admin to work)
-cp vendor/processwire/processwire/site-blank/templates/admin.php site/templates/admin.php
-
-# Ensure required directories exist with write permissions
-mkdir -p site/modules site/assets/files site/assets/cache site/assets/logs site/assets/sessions
-chmod -R 777 site/assets/ site/install/ site/modules/
-chown www-data:www-data index.php install.php
-'
-```
-
-**Why these steps are needed:**
-- `wire/` symlink: PW core lives in `vendor/` but PW expects it at the root
-- `index.php` must be a **copy**, not a symlink — symlinks confuse PW's path detection and cause 404s after installation
-- `install.sql` + `info.php`: PW installer won't detect a profile without these
-- `admin.php`: Missing this causes "Missing or non-readable template file: admin.php" errors
-- `site/modules/`: PW installer fails if this directory doesn't exist
-
-### ProcessWire Installation (Web Installer)
-
-When you visit http://localhost:8080, the PW installer will run:
+When you visit http://localhost:8080 for the first time, the PW installer will run:
 
 1. **Database settings:**
-   - Host: `db` (the Docker service name — **not** `localhost`, which triggers Unix socket connection)
+   - Host: `db` (the Docker service name, not localhost)
    - Name: value from `DB_NAME` in `.env`
    - User: value from `DB_USER` in `.env`
    - Password: value from `DB_PASS` in `.env`
@@ -135,31 +96,12 @@ When you visit http://localhost:8080, the PW installer will run:
 
 4. **Profile:** Blank (we use our own templates)
 
-5. **After installation — clean up config.php:**
-   The PW installer **appends** its own config block to `site/config.php`, creating duplicate/conflicting values with the environment-aware config already in the file. After installation, edit `site/config.php` to remove the duplicates and keep only the clean environment-aware version with the installer-generated values (`userAuthSalt`, `tableSalt`, `installed`, `sessionName`) merged in.
-
-6. **Import fields and templates** using the import runner script (see below).
-
-### Running Import Scripts
-
-The PW CLI bootstrap does **not** set `$_SERVER['HTTP_HOST']`, which breaks environment-aware config files (the `$isLocal` detection falls through to production `CHANGE_ME` values). Two workarounds:
-
-**Option A: Set HTTP_HOST in CLI (recommended):**
-```bash
-docker exec <project>-web bash -c '
-export HTTP_HOST=localhost:8080
-php -d variables_order=EGPCS -r "
-\$_SERVER[\"HTTP_HOST\"] = \"localhost:8080\";
-include \"/var/www/html/index.php\";
-include \"/var/www/html/site/templates/run-import.php\";
-"
-'
-```
-
-**Option B: Temporary web-accessible script:**
-Place the import script in `site/templates/`, access it via browser as a logged-in superuser, then delete it immediately.
-
-**Never** run `php scripts/install-fields.php` directly from CLI without setting HTTP_HOST — it will fail with database connection errors.
+5. After installation, import fields and templates from the exports:
+   - Navigate to Setup > Fields > Import
+   - Paste contents of `site/install/fields.json`
+   - Navigate to Setup > Templates > Import
+   - Paste contents of `site/install/templates.json`
+   - Or run: `php scripts/install-fields.php`
 
 ### Daily Development
 
@@ -243,38 +185,6 @@ composer install
 php -v
 ```
 
-### "No installation profile" error
-The PW installer can't find `install.sql` and `info.php` in `site/install/`. Copy them from the blank profile:
-```bash
-docker exec <project>-web bash -c '
-cp vendor/processwire/processwire/site-blank/install/install.sql site/install/install.sql
-cp vendor/processwire/processwire/site-blank/install/info.php site/install/info.php
-'
-```
-
-### "Missing template file: admin.php" error
-Copy `admin.php` from the blank profile:
-```bash
-docker exec <project>-web cp vendor/processwire/processwire/site-blank/templates/admin.php site/templates/admin.php
-```
-
-### "Directory /site/modules/ does not exist" error
-```bash
-mkdir -p site/modules && chmod 777 site/modules
-```
-
-### 404 after PW installation completes
-Usually caused by `index.php` being a symlink. Replace with an actual copy:
-```bash
-docker exec <project>-web bash -c 'rm index.php && cp vendor/processwire/processwire/index.php index.php'
-```
-
-### Git clone fails inside Docker container
-Docker containers often can't resolve GitHub DNS. **Always clone modules from the host machine** — the `site/modules/` directory is volume-mounted and immediately visible inside the container.
-
-### Database "SQLSTATE[HY000] [2002] No such file or directory"
-The DB host must be `db` (the Docker service name), not `localhost`. Using `localhost` causes PHP to attempt a Unix socket connection which doesn't exist in the container.
-
 ### Slow file system on macOS
 Docker on macOS can be slow with mounted volumes. If performance is poor:
 1. Open Docker Desktop > Settings > Resources > File Sharing
@@ -285,6 +195,43 @@ Docker on macOS can be slow with mounted volumes. If performance is poor:
 Ensure Git is configured to use LF line endings:
 ```bash
 git config core.autocrlf input
+```
+
+## Multi-Site Project Overlay
+
+When using the `sites/<project>/` directory pattern, a `docker/docker-compose.override.yml` overlays project-specific files onto PW's `site/` directory inside the container:
+
+```yaml
+# docker/docker-compose.override.yml
+services:
+  web:
+    volumes:
+      - ../sites/<project>/templates:/var/www/html/site/templates:cached
+      - ../sites/<project>/config.php:/var/www/html/site/config.php:cached
+      - ../sites/<project>/install:/var/www/html/site/install:cached
+```
+
+**Important notes:**
+- `site/assets/` is NOT overlaid — PW manages `files/`, `logs/`, `cache/` there
+- Vite output must go to `../../site/assets/dist/` (relative to the project dir)
+- PW install files (`install.sql`, `info.php`, `files/`) must be copied into the project's install dir
+- When switching projects: update the override file, update `docker/.env`, then restart containers
+- Must stop old project's containers by name first: `docker compose -p <old-project> down`
+
+### Switching Between Projects
+
+```bash
+# 1. Stop current project
+cd docker && docker compose down
+
+# 2. Update docker/.env with new project credentials
+cp ../sites/<new-project>/docker.env .env
+
+# 3. Update override to point at new project
+# Edit docker-compose.override.yml paths
+
+# 4. Start new project
+docker compose up -d --build
 ```
 
 ## Resetting Everything
