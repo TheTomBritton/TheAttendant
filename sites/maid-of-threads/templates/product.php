@@ -13,7 +13,7 @@ $extra_foot = '';
 $hero = '';
 
 // Gather product images (main image + gallery)
-$images = $page->product_images;
+$images = $page->product_gallery;
 $main_image = $images->first();
 
 // Related products: same category, exclude current, limit 4

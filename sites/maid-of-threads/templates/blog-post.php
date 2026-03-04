@@ -21,7 +21,7 @@ $date_iso = date('Y-m-d', $page->getUnformatted('date'));
 $categories = $page->parents("template=blog-category");
 
 // Gather tags
-$tags = $page->tags;
+$tags = $page->blog_tags;
 
 ob_start(); ?>
 

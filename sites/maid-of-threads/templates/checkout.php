@@ -44,7 +44,7 @@ if ($input->requestMethod('POST')) {
         $product = $pages->get("template=product, id=$product_id");
         if (!$product->id) continue;
 
-        $image = $product->product_images->first();
+        $image = $product->product_gallery->first();
         $images = $image ? [$input->httpUrl(true) . $image->size(400, 400)->url] : [];
 
         $line_items[] = [
@@ -144,7 +144,7 @@ ob_start();
                         $product = $item['product'];
                         $qty = $item['quantity'];
                         $line_total = $product->product_price * $qty;
-                        $image = $product->product_images->first();
+                        $image = $product->product_gallery->first();
                     ?>
                         <div class="flex items-center gap-4 p-3 rounded-lg bg-white border border-stone-200">
                             <!-- Thumbnail -->

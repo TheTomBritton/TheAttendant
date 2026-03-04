@@ -91,7 +91,7 @@ if ($input->get('json')) {
         $product = $pages->get("template=product, id=$product_id");
         if (!$product->id) continue;
 
-        $image = $product->product_images->first();
+        $image = $product->product_gallery->first();
         $items[] = [
             'id'        => $product->id,
             'title'     => $product->title,
@@ -168,7 +168,7 @@ ob_start();
                     <?php foreach ($cart_items as $item):
                         $product = $item['product'];
                         $qty = $item['quantity'];
-                        $image = $product->product_images->first();
+                        $image = $product->product_gallery->first();
                         $line_total = $product->product_price * $qty;
                     ?>
                         <div class="flex gap-4 p-4 rounded-xl border border-stone-200 bg-white">

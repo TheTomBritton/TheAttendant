@@ -2,7 +2,6 @@
 
 ## Priority: High
 
-- [ ] **Add products** — Create sample products in PW admin under Shop > categories (New Arrivals, Accessories, Homeware, Gifts). Each product needs: title, body, price, SKU, featured image, product gallery.
 - [ ] **Configure Stripe API keys** — Replace `CHANGE_ME` placeholders in `config.php` (lines 93–99) with test keys from Stripe dashboard. Get keys at https://dashboard.stripe.com/test/apikeys
 - [ ] **Replace userAuthSalt** — Generate a unique 64-character random string and replace the placeholder in `config.php` (line 62). Use `openssl rand -hex 32` to generate one.
 - [ ] **Install PW modules** — Log in to admin, go to Modules > Install for each:
@@ -13,17 +12,18 @@
   - WireMailSmtp (email delivery)
   - CronjobDatabaseBackup (automated backups)
   - SessionHandlerDB (core module — enable in admin)
-
-## Priority: Medium
-
 - [ ] **Hide policy pages from main nav** — Privacy Policy and Terms & Conditions show in the nav because they use `basic-page` template. Options:
   - Create a dedicated `legal-page` template (identical to basic-page but excluded from nav query)
   - Or add a `show_in_nav` toggle field to basic-page and filter on it
-- [ ] **Add homepage content** — The hero currently shows "Home" as the heading. Update the homepage title/body in PW admin to showcase the brand properly.
-- [ ] **Add blog posts** — Create a few sample blog posts under Blog to test the blog-index, blog-post, and blog-category templates.
-- [ ] **Test cart flow** — Add a product, add to cart, test cart page quantities, test checkout redirect (will fail until Stripe keys are configured).
+
+## Priority: Medium
+
+- [ ] **Add product images** — Upload real product photography via PW admin. Each product needs a featured_image and product_gallery images. Current products have text content but no images.
+- [ ] **Add blog post images** — Upload featured images for each blog post via PW admin.
+- [ ] **Test cart flow** — Add a product to cart, test quantity updates, test checkout redirect (will fail until Stripe keys are configured).
 - [ ] **Add favicon** — Create and add a favicon to `site/assets/dist/` or as a PW field on the homepage.
 - [ ] **Contact form** — The contact template currently only renders a placeholder. Wire up FrontendForms module after installation.
+- [ ] **Visual refinement** — Review all page templates in the browser and adjust styling, spacing, and layout as needed.
 
 ## Priority: Low
 
@@ -36,6 +36,16 @@
 - [ ] **RSS feed** — Verify `/blog-rss/` outputs valid XML with blog posts.
 - [ ] **Performance** — Enable ProCache or file caching once content is in place. Review Lighthouse scores.
 - [ ] **Security hardening** — Before going live: change admin URL, set file permissions, review `.htaccess`, disable debug mode.
+
+## Completed
+
+- [x] **Add products** — 12 products created across 4 categories with full descriptions, prices, SKUs, stock, features, and related product links.
+- [x] **Add homepage content** — Hero title, summary, and body content populated.
+- [x] **Add blog posts** — 9 posts created across 3 categories (News, Inspiration, Behind the Scenes) with dates Oct 2025–Feb 2026.
+- [x] **Add blog tags** — 8 tags created (Sustainability, Handmade, Textile Care, Gift Guide, Natural Fibres, Local Makers, Studio Life, Seasonal).
+- [x] **Static page content** — About, Contact, Privacy Policy, Terms & Conditions all populated with realistic content.
+- [x] **Shop category descriptions** — All 4 categories have summary and body text.
+- [x] **Fix field name mismatches** — `product_images` → `product_gallery`, `tags` → `blog_tags` in template files.
 
 ## Deployment Checklist
 
