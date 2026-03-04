@@ -30,17 +30,29 @@ Check that all services are running:
 - **MariaDB**: port 3306
 - **Adminer** (DB admin): http://localhost:8081
 
-### Step 5: First Run Setup
-If this is the first run (no `wire/` directory exists):
+### Step 4b: Multi-Site Overlay Check
+If the current branch uses the `sites/<project>/` pattern (check if `sites/` directory exists):
+1. Verify `docker/docker-compose.override.yml` exists and points at the correct project
+2. Verify the project's install dir has PW installer files (`install.sql`, `info.php`, `files/`)
+3. If switching projects, stop old containers first: `docker compose -p <old-project> down`
 
-1. Confirm `composer install` has been run
-2. Check that the PW installer is accessible at http://localhost:8080
-3. Guide through the web installer:
-   - Database: use values from `docker/.env`
-   - Admin user: use values from `docker/.env`
+### Step 5: First Run Setup
+If this is the first run (no `wire/` directory exists or fresh database):
+
+1. Run `composer install` inside the container: `docker compose exec web composer install`
+2. Copy PW installer to root: `docker compose exec web cp /var/www/html/vendor/processwire/processwire/install.php /var/www/html/install.php`
+3. **Important**: If `config.php` already has `$config->dbName` set, temporarily comment it out — PW's index.php skips the installer if dbName is set
+4. Navigate to http://localhost:8080/install.php (NOT just `/` — the .htaccess rewrites to index.php)
+5. Guide through the web installer:
+   - Database host: `db` (Docker service name, not localhost)
+   - Database name/user/pass: values from `docker/.env`
    - Time zone: Europe/London
    - Select "Blank" site profile
-4. After installation, remind to run the field/template import script
+6. After installation:
+   - Delete `install.php` from root (PW blocks admin while it exists)
+   - Restore `$config->dbName` if it was commented out
+   - Clean up duplicate config entries appended by installer (keep tableSalt, installed, sessionName)
+   - Run the field/template import script
 
 ### Step 6: Output Status
 Display:

@@ -197,6 +197,43 @@ Ensure Git is configured to use LF line endings:
 git config core.autocrlf input
 ```
 
+## Multi-Site Project Overlay
+
+When using the `sites/<project>/` directory pattern, a `docker/docker-compose.override.yml` overlays project-specific files onto PW's `site/` directory inside the container:
+
+```yaml
+# docker/docker-compose.override.yml
+services:
+  web:
+    volumes:
+      - ../sites/<project>/templates:/var/www/html/site/templates:cached
+      - ../sites/<project>/config.php:/var/www/html/site/config.php:cached
+      - ../sites/<project>/install:/var/www/html/site/install:cached
+```
+
+**Important notes:**
+- `site/assets/` is NOT overlaid — PW manages `files/`, `logs/`, `cache/` there
+- Vite output must go to `../../site/assets/dist/` (relative to the project dir)
+- PW install files (`install.sql`, `info.php`, `files/`) must be copied into the project's install dir
+- When switching projects: update the override file, update `docker/.env`, then restart containers
+- Must stop old project's containers by name first: `docker compose -p <old-project> down`
+
+### Switching Between Projects
+
+```bash
+# 1. Stop current project
+cd docker && docker compose down
+
+# 2. Update docker/.env with new project credentials
+cp ../sites/<new-project>/docker.env .env
+
+# 3. Update override to point at new project
+# Edit docker-compose.override.yml paths
+
+# 4. Start new project
+docker compose up -d --build
+```
+
 ## Resetting Everything
 
 ```bash
