@@ -19,10 +19,12 @@ composer require <vendor>/<module-name>
 **Via PW Modules Directory:**
 Provide the download URL and instruct to place in `site/modules/<ModuleName>/`
 
-**Via Git submodule (if on GitHub):**
+**Via Git clone (preferred for GitHub modules):**
 ```bash
-git submodule add <repo-url> site/modules/<ModuleName>
+git clone <repo-url> site/modules/<ModuleName>
 ```
+
+**Important:** Clone modules on the host machine, NOT inside Docker — the container may have DNS resolution issues with GitHub. Modules are gitignored so they won't be committed to the project repo.
 
 Always check if the module is available via Composer first. If not, provide the GitHub/modules directory URL.
 

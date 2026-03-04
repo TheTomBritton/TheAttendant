@@ -1,0 +1,10 @@
+# Maid of Threads — overlay project files onto site/ inside the container
+# This lets PW serve from sites/maid-of-threads/ without touching site/ on disk.
+# Delete or replace this file when switching to a different project.
+
+services:
+  web:
+    volumes:
+      - ../sites/maid-of-threads/templates:/var/www/html/site/templates:cached
+      - ../sites/maid-of-threads/config.php:/var/www/html/site/config.php:cached
+      - ../sites/maid-of-threads/install:/var/www/html/site/install:cached
