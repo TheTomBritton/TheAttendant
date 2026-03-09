@@ -55,15 +55,49 @@ npm install @picocss/pico
 
 ## JavaScript
 
-### Vanilla JS (Default)
-**Best for**: Most ProcessWire sites. PW handles routing and rendering server-side — JS is for enhancement.
-**Why**: No build step overhead, no framework learning curve, fastest performance.
-**Use for**: Mobile menus, accordions, form validation, scroll effects, lazy loading.
+### HTMX (Default)
+**Best for**: All projects with any dynamic behaviour. ProcessWire's server-side rendering pairs naturally with HTMX's hypermedia approach.
+**Why**: ~14KB, progressive enhancement, no build step, no client-side state to manage. Let the server do the work.
+**Use for**: Live search, infinite scroll, form submission without reload, tab content loading, filtering, pagination, partial page updates.
+
+```html
+<button hx-get="/api/load-more/" hx-target="#results" hx-swap="beforeend">
+    Load More
+</button>
+```
+
+**Setup (CDN for prototyping, local for production):**
+```html
+<script src="https://unpkg.com/htmx.org@2.x.x/dist/htmx.min.js"></script>
+```
+
+**ProcessWire endpoint pattern** — return a rendered partial from a PW template, not JSON:
+```php
+// templates/partials/search-results.php
+if ($config->ajax) {
+    // Return rendered HTML fragment
+    echo $pages->find("title%={$input->get->q}, limit=12")->render('/partials/card');
+    exit;
+}
+```
+
+```html
+<input type="search" name="q"
+       hx-get="/search/"
+       hx-target="#results"
+       hx-trigger="input changed delay:300ms"
+       hx-swap="innerHTML">
+<div id="results"></div>
+```
+
+**Default to HTMX. Only escalate if:**
+1. You need local reactive state (e.g. a client-side cart) → use Alpine.js
+2. HTMX genuinely cannot meet the requirement → then consider a JS framework
 
 ### Alpine.js
-**Best for**: When you need reactive UI components without a full framework. Interactive elements within server-rendered pages.
-**Why**: ~17KB, works directly in HTML with directives, no build step needed.
-**Use for**: Dropdowns, tabs, modals, toggles, search filters, shopping carts.
+**Best for**: Local reactive UI state that doesn't need a server round-trip.
+**Why**: ~17KB, works directly in HTML with directives, no build step needed. Complements HTMX well — use them together.
+**Use for**: Dropdowns, modals, toggles, accordions, client-side cart state.
 
 ```html
 <div x-data="{ open: false }">
@@ -77,16 +111,10 @@ npm install @picocss/pico
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 ```
 
-### HTMX
-**Best for**: When you need dynamic page updates without full page reloads. Works brilliantly with PW's server-side rendering.
-**Why**: ~14KB, progressive enhancement, no build step, works with any backend.
-**Use for**: Infinite scroll, live search, form submission without reload, tab content loading.
-
-```html
-<button hx-get="/api/load-more/" hx-target="#results" hx-swap="beforeend">
-    Load More
-</button>
-```
+### Vanilla JS
+**Best for**: Truly minimal enhancement where even HTMX is overkill — a single event listener, a scroll effect.
+**Why**: No dependency, no build step. Fine for one-off behaviours.
+**Avoid when**: You need dynamic content loading or any server interaction — use HTMX instead.
 
 ### Swiper
 **Best for**: When you need a carousel/slider. The gold standard.
@@ -135,7 +163,7 @@ export default defineConfig({
 
 ### Business Brochure (5–20 pages)
 - **CSS**: Tailwind CSS
-- **JS**: Vanilla JS + Alpine.js if interactive elements needed
+- **JS**: HTMX (contact form, nav) + Alpine.js if local state needed
 - **Build**: Tailwind CLI
 - **Why**: Fast to build, easy to customise, small output
 
@@ -165,7 +193,7 @@ export default defineConfig({
 
 ### Simple/Small Site (under 5 pages)
 - **CSS**: Pico CSS or Custom CSS
-- **JS**: Vanilla JS (minimal)
+- **JS**: HTMX if any dynamic behaviour needed, otherwise none
 - **Build**: None needed
 - **Why**: Minimal overhead for minimal sites
 
