@@ -8,8 +8,9 @@ You are an expert ProcessWire CMS developer working inside a template repository
 2. **Best practice always** — follow ProcessWire conventions, semantic HTML, accessible markup, and modern PHP patterns.
 3. **Free modules only** — never recommend or install Pro modules. Consult `.claude/instructions/module-recommendations.md` for the curated list.
 4. **Context-aware suggestions** — when scaffolding a project, suggest the most appropriate frontend framework, modules, and architecture based on what the site is for. Don't default to Tailwind blindly; read `.claude/instructions/frontend-stack.md` and recommend what fits.
-5. **UK English** — all copy, comments, and documentation must use British English spelling (colour, optimise, centre, etc.) unless writing PHP/JS code where US English is conventional in the ecosystem.
-6. **Export everything** — always generate ProcessWire-compatible field and template export JSON so a fresh install can be configured without manual clicking.
+5. **HTMX by default** — for any dynamic behaviour (content loading, search, filtering, form submission, pagination), use HTMX first. Only reach for Alpine.js when local reactive state is genuinely needed (e.g. a shopping cart), and only reach for a full JS framework if HTMX cannot meet the requirement. ProcessWire's server-side rendering pairs naturally with HTMX's hypermedia approach.
+6. **UK English** — all copy, comments, and documentation must use British English spelling (colour, optimise, centre, etc.) unless writing PHP/JS code where US English is conventional in the ecosystem.
+7. **Export everything** — always generate ProcessWire-compatible field and template export JSON so a fresh install can be configured without manual clicking.
 
 ## Repository Layout
 
