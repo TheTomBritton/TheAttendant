@@ -2,24 +2,15 @@
 
 ## Priority: High
 
-- [ ] **Configure Stripe API keys** — Replace `CHANGE_ME` placeholders in `config.php` (lines 93–99) with test keys from Stripe dashboard. Get keys at https://dashboard.stripe.com/test/apikeys
-- [ ] **Replace userAuthSalt** — Generate a unique 64-character random string and replace the placeholder in `config.php` (line 62). Use `openssl rand -hex 32` to generate one.
-- [ ] **Install PW modules** — Log in to admin, go to Modules > Install for each:
-  - TracyDebugger (dev debugging)
-  - SeoMaestro (SEO meta fields)
-  - FrontendForms (contact form validation)
-  - CroppableImage3 (image cropping)
-  - WireMailSmtp (email delivery)
-  - CronjobDatabaseBackup (automated backups)
-  - SessionHandlerDB (core module — enable in admin)
-- [ ] **Hide policy pages from main nav** — Privacy Policy and Terms & Conditions show in the nav because they use `basic-page` template. Options:
-  - Create a dedicated `legal-page` template (identical to basic-page but excluded from nav query)
-  - Or add a `show_in_nav` toggle field to basic-page and filter on it
+- [x] **Configure Stripe API keys** — Test keys set in `config.php`.
+- [x] **Replace userAuthSalt** — Unique 64-character hex string generated and set in `config.php`.
+- [x] **Install PW modules** — All installed: TracyDebugger, SeoMaestro, FrontendForms, CroppableImage3, WireMailSmtp, CronjobDatabaseBackup, MarkupSitemap, SessionHandlerDB.
+- [x] **Hide policy pages from main nav** — Created `legal-page` template and switched Privacy Policy + Terms & Conditions to use it. Nav query unchanged — `legal-page` simply isn't in the selector.
 
 ## Priority: Medium
 
-- [ ] **Add product images** — Upload real product photography via PW admin. Each product needs a featured_image and product_gallery images. Current products have text content but no images.
-- [ ] **Add blog post images** — Upload featured images for each blog post via PW admin.
+- [x] **Add product images** — Placeholder images added (featured + 3 gallery per product). Replace with real photography when available.
+- [x] **Add blog post images** — Placeholder featured image on introductory blog post. Replace with real photography when available.
 - [ ] **Test cart flow** — Add a product to cart, test quantity updates, test checkout redirect (will fail until Stripe keys are configured).
 - [ ] **Add favicon** — Create and add a favicon to `site/assets/dist/` or as a PW field on the homepage.
 - [ ] **Contact form** — The contact template currently only renders a placeholder. Wire up FrontendForms module after installation.
@@ -39,9 +30,9 @@
 
 ## Completed
 
-- [x] **Add products** — 12 products created across 4 categories with full descriptions, prices, SKUs, stock, features, and related product links.
+- [x] **Add products** — 5 embroidery products (kits, PDF patterns, commissions) with placeholder images, full descriptions, prices, SKUs, and stock.
 - [x] **Add homepage content** — Hero title, summary, and body content populated.
-- [x] **Add blog posts** — 9 posts created across 3 categories (News, Inspiration, Behind the Scenes) with dates Oct 2025–Feb 2026.
+- [x] **Add blog post** — Introductory "Welcome to Maid of Threads" post with placeholder featured image, categorised as Behind the Scenes.
 - [x] **Add blog tags** — 8 tags created (Sustainability, Handmade, Textile Care, Gift Guide, Natural Fibres, Local Makers, Studio Life, Seasonal).
 - [x] **Static page content** — About, Contact, Privacy Policy, Terms & Conditions all populated with realistic content.
 - [x] **Shop category descriptions** — All 4 categories have summary and body text.

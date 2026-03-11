@@ -13,6 +13,9 @@ services:
         condition: service_healthy
     environment:
       - APACHE_DOCUMENT_ROOT=/var/www/html
+      - STRIPE_PUBLIC_KEY=${STRIPE_PUBLIC_KEY:-}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET:-}
     restart: unless-stopped
 
   db:

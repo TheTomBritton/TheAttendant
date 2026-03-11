@@ -13,5 +13,6 @@
     { "name": "blog-tag", "label": "Blog Tag", "fields": ["title"], "noChildren": true, "noParents": false, "urlSegments": false, "tags": "blog" },
     { "name": "blog-rss", "label": "Blog RSS Feed", "fields": ["title"], "noChildren": true, "noParents": true, "noPrependTemplateFile": true, "noAppendTemplateFile": true, "contentType": "xml", "urlSegments": false, "tags": "blog" },
     { "name": "contact", "label": "Contact", "fields": ["title", "body", "summary", "seo_title", "seo_description"], "noChildren": true, "noParents": true, "urlSegments": false, "tags": "core" },
-    { "name": "search", "label": "Search", "fields": ["title"], "noChildren": true, "noParents": true, "urlSegments": false, "tags": "core" }
+    { "name": "search", "label": "Search", "fields": ["title"], "noChildren": true, "noParents": true, "urlSegments": false, "tags": "core" },
+    { "name": "legal-page", "label": "Legal Page", "fields": ["title", "body", "summary", "seo_title", "seo_description"], "noChildren": true, "noParents": false, "urlSegments": false, "tags": "core" }
 ]

@@ -16,7 +16,7 @@
     { "name": "cart", "title": "Shopping Cart", "template": "cart", "parent": "/", "status": "hidden", "sort": 93 },
     { "name": "checkout", "title": "Checkout", "template": "checkout", "parent": "/", "status": "hidden", "sort": 94 },
     { "name": "order-confirmation", "title": "Order Confirmation", "template": "order-confirmation", "parent": "/", "status": "hidden", "sort": 95 },
-    { "name": "privacy-policy", "title": "Privacy Policy", "template": "basic-page", "parent": "/", "status": "published", "sort": 5, "content": { "summary": "How we collect, use, and protect your personal data.", "body": "<p>Privacy policy content goes here.</p>" } },
-    { "name": "terms-and-conditions", "title": "Terms & Conditions", "template": "basic-page", "parent": "/", "status": "published", "sort": 6, "content": { "summary": "Terms and conditions for purchasing from Maid of Threads.", "body": "<p>Terms and conditions content goes here.</p>" } },
+    { "name": "privacy-policy", "title": "Privacy Policy", "template": "legal-page", "parent": "/", "status": "published", "sort": 5, "content": { "summary": "How we collect, use, and protect your personal data.", "body": "<p>Privacy policy content goes here.</p>" } },
+    { "name": "terms-and-conditions", "title": "Terms & Conditions", "template": "legal-page", "parent": "/", "status": "published", "sort": 6, "content": { "summary": "Terms and conditions for purchasing from Maid of Threads.", "body": "<p>Terms and conditions content goes here.</p>" } },
     { "name": "blog-rss", "title": "Blog RSS Feed", "template": "blog-rss", "parent": "/", "status": "hidden", "sort": 96 }
 ]
