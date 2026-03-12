@@ -63,19 +63,21 @@ jobs:
       # ── Assemble deploy directory ───────────────────────────
       - name: Assemble production files
         run: |
+          PW_ROOT=vendor/processwire/processwire
+
           mkdir -p deploy/site/templates
           mkdir -p deploy/site/assets/dist
           mkdir -p deploy/site/modules
 
-          # PW core (from Composer)
-          cp -R wire deploy/wire
+          # PW core (from Composer vendor dir)
+          cp -R $PW_ROOT/wire deploy/wire
 
           # Vendor (Composer autoload + Stripe SDK)
           cp -R vendor deploy/vendor
 
-          # Root PW files
-          cp index.php deploy/
-          cp .htaccess deploy/
+          # Root PW files (from PW package)
+          cp $PW_ROOT/index.php deploy/
+          cp $PW_ROOT/.htaccess deploy/
 
           # Site config
           cp sites/maid-of-threads/config.php deploy/site/config.php
