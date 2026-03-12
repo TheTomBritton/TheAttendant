@@ -1,0 +1,152 @@
+name: Deploy Maid of Threads
+
+on:
+  # Auto-deploy when pushing to the maid-of-threads branch
+  push:
+    branches: [maid-of-threads]
+    paths:
+      - 'sites/maid-of-threads/**'
+      - 'composer.json'
+      - '.github/workflows/deploy-maid-of-threads.yml'
+
+  # Manual trigger from GitHub Actions tab
+  workflow_dispatch:
+
+# Only one deploy at a time — cancel in-progress runs
+concurrency:
+  group: deploy-maid-of-threads
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── Checkout ────────────────────────────────────────────
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ── PHP + Composer ──────────────────────────────────────
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer:v2
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.json') }}
+          restore-keys: composer-
+
+      - name: Install Composer dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction
+
+      # ── Node + Build ────────────────────────────────────────
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: sites/maid-of-threads/package-lock.json
+
+      - name: Install Node dependencies
+        working-directory: sites/maid-of-threads
+        run: npm ci
+
+      - name: Build production assets
+        working-directory: sites/maid-of-threads
+        run: npm run build
+
+      # ── SSH Setup ───────────────────────────────────────────
+      - name: Configure SSH
+        env:
+          SSH_KEY: ${{ secrets.KRYSTAL_SSH_KEY }}
+          SSH_PASSPHRASE: ${{ secrets.KRYSTAL_SSH_PASSPHRASE }}
+          SSH_HOST: ${{ secrets.KRYSTAL_SSH_HOST }}
+        run: |
+          mkdir -p ~/.ssh
+
+          # Write the encrypted private key
+          echo "$SSH_KEY" > ~/.ssh/deploy_key.enc
+          chmod 600 ~/.ssh/deploy_key.enc
+
+          # Decrypt to a passphrase-free key for non-interactive use
+          openssl rsa -in ~/.ssh/deploy_key.enc -out ~/.ssh/deploy_key -passin "pass:$SSH_PASSPHRASE"
+          chmod 600 ~/.ssh/deploy_key
+
+          # Trust the host key
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+          # SSH config for simpler rsync commands
+          cat > ~/.ssh/config <<EOF
+          Host krystal
+            HostName $SSH_HOST
+            User ${{ secrets.KRYSTAL_SSH_USER }}
+            IdentityFile ~/.ssh/deploy_key
+            StrictHostKeyChecking accept-new
+          EOF
+          chmod 600 ~/.ssh/config
+
+      # ── Deploy via rsync ────────────────────────────────────
+      - name: Deploy to Krystal
+        env:
+          DEPLOY_PATH: ${{ secrets.KRYSTAL_DEPLOY_PATH }}
+        run: |
+          # Ensure remote directories exist
+          ssh krystal "mkdir -p $DEPLOY_PATH/site/templates $DEPLOY_PATH/site/assets/dist $DEPLOY_PATH/site/modules"
+
+          # Sync PW core
+          rsync -azq --delete \
+            wire/ \
+            krystal:$DEPLOY_PATH/wire/
+
+          # Sync vendor (Composer autoload + Stripe SDK)
+          rsync -azq --delete \
+            vendor/ \
+            krystal:$DEPLOY_PATH/vendor/
+
+          # Sync templates (from the project overlay)
+          rsync -azq --delete \
+            sites/maid-of-threads/templates/ \
+            krystal:$DEPLOY_PATH/site/templates/
+
+          # Sync built assets
+          rsync -azq --delete \
+            sites/maid-of-threads/assets/dist/ \
+            krystal:$DEPLOY_PATH/site/assets/dist/
+
+          # Sync modules (if any committed)
+          if [ -d "sites/maid-of-threads/modules" ]; then
+            rsync -azq \
+              sites/maid-of-threads/modules/ \
+              krystal:$DEPLOY_PATH/site/modules/
+          fi
+
+          # Sync root PW files
+          rsync -azq \
+            index.php \
+            .htaccess \
+            krystal:$DEPLOY_PATH/
+
+          # Sync site config
+          rsync -azq \
+            sites/maid-of-threads/config.php \
+            krystal:$DEPLOY_PATH/site/config.php
+
+      # ── Post-deploy ─────────────────────────────────────────
+      - name: Set file permissions
+        env:
+          DEPLOY_PATH: ${{ secrets.KRYSTAL_DEPLOY_PATH }}
+        run: |
+          ssh krystal "
+            find $DEPLOY_PATH -type d -exec chmod 755 {} \;
+            find $DEPLOY_PATH -type f -exec chmod 644 {} \;
+            chmod -R 755 $DEPLOY_PATH/site/assets/
+          "
+
+      - name: Clean up SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key ~/.ssh/deploy_key.enc
