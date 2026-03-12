@@ -5,7 +5,7 @@
  *
  * Handles all cart mutations (add/update/remove/clear) via POST
  * with CSRF protection and Post-Redirect-Get pattern. Also serves
- * a JSON endpoint for Alpine.js cart store synchronisation.
+ * an HTMX badge endpoint and JSON API for cart data.
  */
 
 $extra_head = '';
@@ -78,11 +78,33 @@ if ($input->requestMethod('POST')) {
 }
 
 // -----------------------------------------------------------------
-// JSON endpoint for Alpine cart store
+// HTMX badge endpoint — returns an HTML fragment (or empty)
 // -----------------------------------------------------------------
-if ($input->get('json')) {
+$get_action = $sanitizer->text($input->get('action'));
+
+if ($get_action === 'badge') {
+    $totals = getCartTotals();
+    $count = (int) $totals['count'];
+    if ($count > 0) {
+        echo '<span class="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-brand-600 text-xs font-bold text-white">'
+            . $count . '</span>';
+    }
+    return;
+}
+
+// -----------------------------------------------------------------
+// JSON API endpoints (for future integrations)
+// -----------------------------------------------------------------
+if ($get_action && $config->ajax) {
     header('Content-Type: application/json');
 
+    if ($get_action === 'count') {
+        $totals = getCartTotals();
+        echo json_encode(['count' => $totals['count']]);
+        return;
+    }
+
+    // Full cart JSON
     $cart = getCart();
     $totals = getCartTotals();
     $items = [];
@@ -111,7 +133,7 @@ if ($input->get('json')) {
         'total'    => $totals['total'],
         'count'    => $totals['count'],
     ]);
-    return; // Skip _main.php
+    return;
 }
 
 // -----------------------------------------------------------------
@@ -148,12 +170,9 @@ ob_start();
 
         <h1 class="text-3xl lg:text-4xl font-bold text-stone-900 mt-4 mb-8">Your Basket</h1>
 
-        <!-- Flash message -->
+        <!-- Flash message (auto-dismisses via vanilla JS in _main.php) -->
         <?php if ($cart_message): ?>
-            <div class="mb-6 p-4 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm"
-                 x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
-                 x-transition:leave="transition ease-in duration-200"
-                 x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+            <div class="flash-dismiss mb-6 p-4 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm">
                 <?= $sanitizer->entities($cart_message) ?>
             </div>
         <?php endif; ?>

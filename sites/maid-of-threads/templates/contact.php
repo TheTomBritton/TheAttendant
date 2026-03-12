@@ -63,8 +63,9 @@ if ($use_frontend_forms) {
     if ($form->isValid()) {
         $m = wireMail();
         $m->to($page->email ?: $config->adminEmail);
-        $m->from($email->getValue());
-        $m->fromName($name->getValue());
+        $m->from($config->adminEmail);
+        $m->fromName($site_name);
+        $m->replyTo($email->getValue(), $name->getValue());
         $m->subject('[' . $site_name . '] ' . $subject->getValue());
         $m->body(
             "Name: {$name->getValue()}\n" .
@@ -116,8 +117,9 @@ if ($use_frontend_forms) {
         if (empty($errors)) {
             $m = wireMail();
             $m->to($page->email ?: $config->adminEmail);
-            $m->from($form_data['email']);
-            $m->fromName($form_data['name']);
+            $m->from($config->adminEmail);
+            $m->fromName($site_name);
+            $m->replyTo($form_data['email'], $form_data['name']);
             $m->subject('[' . $site_name . '] ' . $form_data['subject']);
             $m->body(
                 "Name: {$form_data['name']}\n" .

@@ -3,7 +3,7 @@
 /**
  * Product — Single Product Page
  *
- * Two-column layout with Alpine.js image gallery, product details,
+ * Two-column layout with image gallery, product details,
  * add-to-cart form, full description, related products, and
  * structured data for SEO.
  */
@@ -45,17 +45,16 @@ ob_start();
         <!-- Product detail -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mt-6">
 
-            <!-- Left column: Image gallery (Alpine) -->
-            <div x-data="productGallery()" class="space-y-4">
+            <!-- Left column: Image gallery -->
+            <div id="product-gallery" class="space-y-4">
                 <!-- Main image -->
                 <div class="aspect-square bg-stone-100 rounded-2xl overflow-hidden">
-                    <?php if ($images->count): ?>
-                        <img x-bind:src="activeImage"
-                             x-bind:alt="activeAlt"
-                             class="w-full h-full object-cover"
-                             x-transition:enter="transition ease-out duration-200"
-                             x-transition:enter-start="opacity-0"
-                             x-transition:enter-end="opacity-100">
+                    <?php if ($images->count):
+                        $first = $images->first(); ?>
+                        <img id="gallery-main"
+                             src="<?= $first->size(800, 800)->url ?>"
+                             alt="<?= $sanitizer->entities($first->description ?: $page->title) ?>"
+                             class="w-full h-full object-cover transition-opacity duration-200">
                     <?php else: ?>
                         <div class="w-full h-full flex items-center justify-center text-stone-400">
                             <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -69,9 +68,9 @@ ob_start();
                 <?php if ($images->count > 1): ?>
                     <div class="flex gap-3 overflow-x-auto pb-2">
                         <?php foreach ($images as $i => $img): ?>
-                            <button @click="setActive(<?= $i ?>)"
-                                    :class="activeIndex === <?= $i ?> ? 'ring-2 ring-rose-500 ring-offset-2' : 'ring-1 ring-stone-200 hover:ring-rose-300'"
-                                    class="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden transition-all focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2">
+                            <button class="gallery-thumb flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden transition-all focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 <?= $i === 0 ? 'ring-2 ring-rose-500 ring-offset-2' : 'ring-1 ring-stone-200 hover:ring-rose-300' ?>"
+                                    data-src="<?= $img->size(800, 800)->url ?>"
+                                    data-alt="<?= $sanitizer->entities($img->description ?: $page->title) ?>">
                                 <?= renderImage($img, [80, 160], '80px', true) ?>
                             </button>
                         <?php endforeach; ?>
@@ -254,38 +253,34 @@ ob_start();
 <?php
 $content = ob_get_clean();
 
-// Alpine component for image gallery
-$extra_foot .= <<<ALPINE
+// Vanilla JS gallery — swap main image on thumbnail click
+if ($images->count > 1) {
+    $extra_foot .= <<<'GALLERY'
 <script>
-function productGallery() {
-    return {
-        images: [
-ALPINE;
+(function() {
+    var main = document.getElementById('gallery-main');
+    if (!main) return;
 
-if ($images->count) {
-    $img_data = [];
-    foreach ($images as $img) {
-        $url = $img->size(800, 800)->url;
-        $alt = $sanitizer->entities($img->description ?: $page->title);
-        $img_data[] = "            { src: '$url', alt: '$alt' }";
-    }
-    $extra_foot .= implode(",\n", $img_data);
-}
+    document.querySelectorAll('.gallery-thumb').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            // Crossfade the main image
+            main.style.opacity = '0';
+            setTimeout(function() {
+                main.src = btn.dataset.src;
+                main.alt = btn.dataset.alt;
+                main.style.opacity = '1';
+            }, 150);
 
-$extra_foot .= <<<ALPINE
-
-        ],
-        activeIndex: 0,
-        get activeImage() {
-            return this.images.length ? this.images[this.activeIndex].src : '';
-        },
-        get activeAlt() {
-            return this.images.length ? this.images[this.activeIndex].alt : '';
-        },
-        setActive(index) {
-            this.activeIndex = index;
-        }
-    }
-}
+            // Update active ring on thumbnails
+            document.querySelectorAll('.gallery-thumb').forEach(function(b) {
+                b.classList.remove('ring-2', 'ring-rose-500', 'ring-offset-2');
+                b.classList.add('ring-1', 'ring-stone-200');
+            });
+            btn.classList.remove('ring-1', 'ring-stone-200');
+            btn.classList.add('ring-2', 'ring-rose-500', 'ring-offset-2');
+        });
+    });
+})();
 </script>
-ALPINE;
+GALLERY;
+}

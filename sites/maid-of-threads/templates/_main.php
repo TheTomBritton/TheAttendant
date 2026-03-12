@@ -52,43 +52,20 @@ $free_shipping_threshold = isset($config->shopFreeShippingThreshold)
     <title><?= $page->title ?> — <?= $site_name ?></title>
     <meta name="description" content="<?= $page->summary ?: $home->summary ?>">
 
+    <!-- Google Fonts: Inter (body) + Playfair Display (headings) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800&display=swap">
+
     <!-- Tailwind / App CSS -->
     <link rel="stylesheet" href="<?= $dist_url . $css_file ?>?v=<?= $css_ver ?>">
 
-    <!-- Alpine.js (defer so it initialises after DOM parse) -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
     <!-- HTMX -->
-    <script src="https://unpkg.com/htmx.org@1.9.12" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2" crossorigin="anonymous"></script>
-
-    <!-- Alpine global store for cart -->
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.store('cart', {
-                count: 0,
-                async refresh() {
-                    try {
-                        const res = await fetch('/cart/?action=count', {
-                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                        });
-                        const data = await res.json();
-                        this.count = data.count || 0;
-                    } catch (e) {
-                        // Silently fail — cart count is non-critical
-                    }
-                },
-                init() {
-                    this.refresh();
-                }
-            });
-        });
-    </script>
+    <script src="https://unpkg.com/htmx.org@2.0.4" crossorigin="anonymous"></script>
 
     <?= $extra_head ?>
 </head>
-<body class="flex min-h-screen flex-col bg-white text-stone-800 antialiased"
-      x-data
-      @cart-updated.window="$store.cart.refresh()">
+<body class="flex min-h-screen flex-col bg-white text-stone-800 antialiased">
 
     <!-- ═══════════════════════════════════════════
          Announcement Bar
@@ -100,8 +77,7 @@ $free_shipping_threshold = isset($config->shopFreeShippingThreshold)
     <!-- ═══════════════════════════════════════════
          Header
          ═══════════════════════════════════════════ -->
-    <header class="sticky top-0 z-50 border-b border-stone-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80"
-            x-data="mobileMenu">
+    <header class="sticky top-0 z-50 border-b border-stone-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
 
         <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
 
@@ -133,29 +109,27 @@ $free_shipping_threshold = isset($config->shopFreeShippingThreshold)
                     </svg>
                 </a>
 
-                <!-- Cart -->
+                <!-- Cart (badge loaded via HTMX) -->
                 <a href="<?= $cart_page->id ? $cart_page->url : '/cart/' ?>" class="relative text-stone-500 transition-colors hover:text-brand-700" aria-label="Shopping cart">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
                     </svg>
-                    <!-- Cart count badge -->
-                    <span x-show="$store.cart.count > 0"
-                          x-text="$store.cart.count"
-                          x-transition
-                          x-cloak
-                          class="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-brand-600 text-xs font-bold text-white">
-                    </span>
+                    <!-- Cart count badge — HTMX fetches HTML fragment on page load -->
+                    <span id="cart-badge"
+                          hx-get="/cart/?action=badge"
+                          hx-trigger="load"
+                          hx-swap="innerHTML"></span>
                 </a>
 
                 <!-- Mobile hamburger -->
-                <button @click="open = !open"
+                <button id="menu-toggle"
                         class="text-stone-500 transition-colors hover:text-brand-700 lg:hidden"
-                        :aria-expanded="open"
+                        aria-expanded="false"
                         aria-label="Toggle menu">
-                    <svg x-show="!open" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <svg id="icon-menu" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                     </svg>
-                    <svg x-show="open" x-cloak class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <svg id="icon-close" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
                     </svg>
                 </button>
@@ -163,27 +137,18 @@ $free_shipping_threshold = isset($config->shopFreeShippingThreshold)
         </div>
 
         <!-- Mobile Navigation -->
-        <nav x-show="open"
-             x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0 -translate-y-2"
-             x-transition:enter-end="opacity-100 translate-y-0"
-             x-transition:leave="transition ease-in duration-150"
-             x-transition:leave-start="opacity-100 translate-y-0"
-             x-transition:leave-end="opacity-0 -translate-y-2"
-             x-cloak
-             class="border-t border-stone-200 bg-white px-4 pb-6 pt-4 lg:hidden"
+        <nav id="mobile-nav"
+             class="border-t border-stone-200 bg-white px-4 pb-6 pt-4 lg:hidden hidden"
              aria-label="Mobile navigation">
             <div class="flex flex-col gap-4">
                 <?php foreach ($home->children("template=$nav_templates, sort=sort") as $child): ?>
                     <a href="<?= $child->url ?>"
-                       @click="open = false"
-                       class="text-base font-medium text-stone-700 transition-colors hover:text-brand-700<?= $child->id === $page->rootParent->id ? ' text-brand-700' : '' ?>">
+                       class="mobile-nav-link text-base font-medium text-stone-700 transition-colors hover:text-brand-700<?= $child->id === $page->rootParent->id ? ' text-brand-700' : '' ?>">
                         <?= $child->title ?>
                     </a>
                 <?php endforeach; ?>
                 <a href="/search/"
-                   @click="open = false"
-                   class="text-base font-medium text-stone-700 transition-colors hover:text-brand-700">
+                   class="mobile-nav-link text-base font-medium text-stone-700 transition-colors hover:text-brand-700">
                     Search
                 </a>
             </div>
@@ -270,23 +235,22 @@ $free_shipping_threshold = isset($config->shopFreeShippingThreshold)
                     </ul>
                 </div>
 
-                <!-- Col 4: Newsletter / Contact -->
+                <!-- Col 4: Contact -->
                 <div>
-                    <h4 class="text-sm font-semibold uppercase tracking-wider text-stone-900">Stay in Touch</h4>
-                    <p class="mt-3 text-sm text-stone-600">
-                        Sign up for updates on new arrivals and exclusive offers.
+                    <h4 class="text-sm font-semibold uppercase tracking-wider text-stone-900">Get in Touch</h4>
+                    <p class="mt-3 text-sm leading-relaxed text-stone-600">
+                        Have a question about an order or want to discuss a custom commission?
                     </p>
-                    <form class="mt-4 flex gap-2" method="post" action="/subscribe/">
-                        <input type="email"
-                               name="email"
-                               placeholder="Your email"
-                               required
-                               class="min-w-0 flex-1 rounded-md border border-stone-300 px-3 py-2 text-sm placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500">
-                        <button type="submit"
-                                class="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2">
-                            Join
-                        </button>
-                    </form>
+                    <?php $contact_page = $pages->get('/contact/'); ?>
+                    <?php if ($contact_page->id): ?>
+                        <a href="<?= $contact_page->url ?>"
+                           class="mt-4 inline-flex items-center gap-2 text-sm font-medium text-brand-600 hover:text-brand-700 transition-colors">
+                            Send us a message
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                            </svg>
+                        </a>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -298,22 +262,235 @@ $free_shipping_threshold = isset($config->shopFreeShippingThreshold)
         </div>
     </footer>
 
+    <!-- ═══════════════════════════════════════════
+         Back-to-Top FAB
+         ═══════════════════════════════════════════ -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="back-to-top"
+                class="flex h-12 w-12 items-center justify-center rounded-full bg-brand-600 text-white shadow-lg hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 transition-all duration-200 opacity-0 translate-y-4 pointer-events-none"
+                aria-label="Back to top">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+            </svg>
+        </button>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         Cookie Consent Banner (GDPR)
+         ═══════════════════════════════════════════ -->
+    <div id="cookie-banner" class="fixed inset-x-0 bottom-0 z-[9998] border-t border-stone-200 bg-white shadow-[0_-4px_24px_rgba(0,0,0,0.1)] hidden">
+        <div class="mx-auto max-w-5xl px-4 py-4 sm:px-6">
+
+            <!-- Main banner -->
+            <div class="sm:flex sm:items-center sm:justify-between sm:gap-6">
+                <p class="text-sm text-stone-600">
+                    We use cookies to improve your experience. Essential cookies are always active. You can choose which additional cookies to allow.
+                    <a href="/privacy-policy/" class="font-medium text-brand-600 hover:text-brand-700 underline">Privacy Policy</a>
+                </p>
+                <div class="mt-3 flex flex-wrap gap-2 sm:mt-0 sm:flex-shrink-0">
+                    <button data-cookie="accept-all" class="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 transition-colors">Accept All</button>
+                    <button data-cookie="reject-all" class="rounded-md bg-stone-100 px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-200 transition-colors">Reject All</button>
+                    <button data-cookie="manage" class="rounded-md bg-stone-100 px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-200 transition-colors">Manage</button>
+                </div>
+            </div>
+
+            <!-- Preferences panel (server-rendered categories) -->
+            <div id="cookie-prefs" class="mt-4 border-t border-stone-200 pt-4 hidden">
+                <div class="grid gap-3 sm:grid-cols-2">
+                    <!-- Essential (always on, cannot disable) -->
+                    <label class="flex items-center justify-between rounded-lg border border-stone-200 p-3">
+                        <div class="mr-4">
+                            <span class="text-sm font-medium text-stone-900">Essential</span>
+                            <span class="block text-xs text-stone-500">Required for the site to function. Cannot be disabled.</span>
+                        </div>
+                        <button type="button" role="switch" aria-checked="true" disabled
+                                class="cookie-toggle opacity-60 cursor-not-allowed" data-cookie-cat="essential">
+                            <span class="toggle-dot"></span>
+                        </button>
+                    </label>
+                    <!-- Analytics -->
+                    <label class="flex items-center justify-between rounded-lg border border-stone-200 p-3">
+                        <div class="mr-4">
+                            <span class="text-sm font-medium text-stone-900">Analytics</span>
+                            <span class="block text-xs text-stone-500">Help us understand how visitors use the site.</span>
+                        </div>
+                        <button type="button" role="switch" aria-checked="false"
+                                class="cookie-toggle" data-cookie-cat="analytics">
+                            <span class="toggle-dot"></span>
+                        </button>
+                    </label>
+                    <!-- Marketing -->
+                    <label class="flex items-center justify-between rounded-lg border border-stone-200 p-3">
+                        <div class="mr-4">
+                            <span class="text-sm font-medium text-stone-900">Marketing</span>
+                            <span class="block text-xs text-stone-500">Used to deliver personalised advertising.</span>
+                        </div>
+                        <button type="button" role="switch" aria-checked="false"
+                                class="cookie-toggle" data-cookie-cat="marketing">
+                            <span class="toggle-dot"></span>
+                        </button>
+                    </label>
+                </div>
+                <div class="mt-3 text-right">
+                    <button data-cookie="save-prefs" class="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 transition-colors">Save Preferences</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- App JS with cache busting -->
     <script src="<?= $dist_url . $js_file ?>?v=<?= $js_ver ?>"></script>
 
-    <!-- Alpine mobileMenu component -->
+    <!-- Page enhancements (vanilla JS — no framework dependency) -->
     <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('mobileMenu', () => ({
-                open: false,
-                init() {
-                    // Close mobile menu on window resize past breakpoint
-                    window.addEventListener('resize', () => {
-                        if (window.innerWidth >= 1024) this.open = false;
-                    });
+    (function() {
+        'use strict';
+
+        // ── Mobile menu toggle ───────────────────────
+        var menuToggle = document.getElementById('menu-toggle');
+        var mobileNav  = document.getElementById('mobile-nav');
+        var iconMenu   = document.getElementById('icon-menu');
+        var iconClose  = document.getElementById('icon-close');
+
+        function closeMenu() {
+            mobileNav.classList.add('hidden');
+            iconMenu.classList.remove('hidden');
+            iconClose.classList.add('hidden');
+            menuToggle.setAttribute('aria-expanded', 'false');
+        }
+
+        if (menuToggle && mobileNav) {
+            menuToggle.addEventListener('click', function() {
+                var isOpen = !mobileNav.classList.contains('hidden');
+                if (isOpen) {
+                    closeMenu();
+                } else {
+                    mobileNav.classList.remove('hidden');
+                    iconMenu.classList.add('hidden');
+                    iconClose.classList.remove('hidden');
+                    menuToggle.setAttribute('aria-expanded', 'true');
                 }
-            }));
+            });
+
+            // Close when a nav link is tapped
+            mobileNav.querySelectorAll('a').forEach(function(link) {
+                link.addEventListener('click', closeMenu);
+            });
+
+            // Auto-close on resize to desktop breakpoint
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 1024) closeMenu();
+            });
+        }
+
+        // ── Back-to-top FAB ──────────────────────────
+        var backToTop = document.getElementById('back-to-top');
+        if (backToTop) {
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 400) {
+                    backToTop.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+                    backToTop.classList.add('opacity-100', 'translate-y-0');
+                } else {
+                    backToTop.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+                    backToTop.classList.remove('opacity-100', 'translate-y-0');
+                }
+            }, { passive: true });
+
+            backToTop.addEventListener('click', function() {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
+
+        // ── Cookie consent (GDPR) ───────────────────
+        var banner = document.getElementById('cookie-banner');
+        var prefs  = document.getElementById('cookie-prefs');
+
+        if (banner) {
+            // Show banner if no consent stored
+            if (!localStorage.getItem('mot_cookie_consent')) {
+                banner.classList.remove('hidden');
+            }
+
+            function closeBanner() {
+                banner.classList.add('hidden');
+            }
+
+            // Accept All
+            banner.querySelector('[data-cookie="accept-all"]').addEventListener('click', function() {
+                banner.querySelectorAll('.cookie-toggle:not([disabled])').forEach(function(btn) {
+                    btn.setAttribute('aria-checked', 'true');
+                });
+                localStorage.setItem('mot_cookie_consent', 'all');
+                closeBanner();
+            });
+
+            // Reject All
+            banner.querySelector('[data-cookie="reject-all"]').addEventListener('click', function() {
+                banner.querySelectorAll('.cookie-toggle:not([disabled])').forEach(function(btn) {
+                    btn.setAttribute('aria-checked', 'false');
+                });
+                localStorage.setItem('mot_cookie_consent', 'essential');
+                closeBanner();
+            });
+
+            // Manage — toggle preferences panel
+            banner.querySelector('[data-cookie="manage"]').addEventListener('click', function() {
+                prefs.classList.toggle('hidden');
+            });
+
+            // Individual category toggles
+            banner.querySelectorAll('.cookie-toggle:not([disabled])').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var checked = btn.getAttribute('aria-checked') === 'true';
+                    btn.setAttribute('aria-checked', String(!checked));
+                });
+            });
+
+            // Save Preferences
+            banner.querySelector('[data-cookie="save-prefs"]').addEventListener('click', function() {
+                var accepted = [];
+                banner.querySelectorAll('.cookie-toggle[aria-checked="true"]').forEach(function(btn) {
+                    accepted.push(btn.getAttribute('data-cookie-cat'));
+                });
+                localStorage.setItem('mot_cookie_consent', accepted.join(','));
+                closeBanner();
+            });
+        }
+
+        // ── Section reveal on scroll ─────────────────
+        if ('IntersectionObserver' in window) {
+            var io = new IntersectionObserver(function(entries) {
+                entries.forEach(function(e) {
+                    if (e.isIntersecting) {
+                        e.target.classList.add('mot-visible');
+                        io.unobserve(e.target);
+                    }
+                });
+            }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+            document.querySelectorAll('.mot-reveal').forEach(function(s) { io.observe(s); });
+        } else {
+            document.querySelectorAll('.mot-reveal').forEach(function(s) { s.classList.add('mot-visible'); });
+        }
+
+        // ── Image fade-in on lazy load ───────────────
+        document.querySelectorAll('img[loading="lazy"]').forEach(function(img) {
+            if (img.complete && img.naturalWidth) {
+                img.classList.add('mot-img-fade', 'mot-img-loaded');
+            } else {
+                img.classList.add('mot-img-fade');
+                img.addEventListener('load', function() { img.classList.add('mot-img-loaded'); });
+            }
         });
+
+        // ── Flash message auto-dismiss ───────────────
+        document.querySelectorAll('.flash-dismiss').forEach(function(el) {
+            setTimeout(function() {
+                el.style.transition = 'opacity 0.3s ease';
+                el.style.opacity = '0';
+                setTimeout(function() { el.remove(); }, 300);
+            }, 5000);
+        });
+    })();
     </script>
 
     <?= $extra_foot ?>

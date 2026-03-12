@@ -13,6 +13,11 @@
  * These prevent _init.php and _main.php from wrapping the output.
  */
 
+// Self-contained: _init.php is skipped, so load helpers and vars here
+include_once(__DIR__ . '/_func.php');
+$site_name = 'Maid of Threads';
+$blog_page = $pages->get('/blog/');
+
 header('Content-Type: application/rss+xml; charset=utf-8');
 
 $posts = $pages->find("template=blog-post, sort=-date, limit=20");

@@ -42,8 +42,9 @@ $blog_page = $pages->get('/blog/');
 $cart_page = $pages->get('/cart/');
 
 // Cart item count from session (for header badge)
+// Cart is stored as [ product_id => quantity ]
 $cart = $session->get('cart') ?: [];
 $cart_count = 0;
-foreach ($cart as $item) {
-    $cart_count += $item['qty'] ?? 0;
+foreach ($cart as $qty) {
+    $cart_count += (int) $qty;
 }

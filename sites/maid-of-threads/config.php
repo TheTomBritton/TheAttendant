@@ -45,7 +45,10 @@ if ($isLocal) {
     $config->debug = true;
 } else {
     // Production — update with your domain
-    $config->httpHosts = ['www.maidofthreads.co.uk', 'maidofthreads.co.uk'];
+    $config->httpHosts = [
+        'www.maidofthreads.co.uk', 'maidofthreads.co.uk',
+        'www.maidofthreads.com', 'maidofthreads.com',
+    ];
     $config->https = true;
     $config->debug = false;
 }
@@ -89,8 +92,8 @@ $config->imageSizerOptions('webpAdd', true);  // Auto-generate WebP variants
 // Admin
 // ──────────────────────────────────────────────
 $config->defaultAdminTheme = 'AdminThemeUikit';
-// Uncomment and change for production (security hardening)
-// $config->urls->admin = '/your-custom-admin/';
+// Custom admin URL — obscures the default /processwire/ path from bots
+$config->urls->admin = '/mot-studio/';
 
 // ──────────────────────────────────────────────
 // Stripe Payment Configuration

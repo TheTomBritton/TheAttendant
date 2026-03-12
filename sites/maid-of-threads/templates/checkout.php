@@ -45,7 +45,8 @@ if ($input->requestMethod('POST')) {
         if (!$product->id) continue;
 
         $image = $product->product_gallery->first();
-        $images = $image ? [$input->httpUrl(true) . $image->size(400, 400)->url] : [];
+        $base_url = rtrim($pages->get('/')->httpUrl, '/');
+        $images = $image ? [$base_url . $image->size(400, 400)->url] : [];
 
         $line_items[] = [
             'price_data' => [
@@ -81,8 +82,8 @@ if ($input->requestMethod('POST')) {
             'line_items'           => $line_items,
             'mode'                 => 'payment',
             'customer_email'       => $input->post('email', 'email') ?: null,
-            'success_url'          => $input->httpUrl(true) . $confirmation_page->url . '?session_id={CHECKOUT_SESSION_ID}',
-            'cancel_url'           => $input->httpUrl(true) . $page->url,
+            'success_url'          => $confirmation_page->httpUrl . '?session_id={CHECKOUT_SESSION_ID}',
+            'cancel_url'           => $page->httpUrl,
             'shipping_address_collection' => [
                 'allowed_countries' => ['GB'],
             ],

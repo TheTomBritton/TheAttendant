@@ -180,16 +180,22 @@ function getCart(): array {
 
 /**
  * Calculate cart totals
+ *
+ * Cart is stored as [ product_id => quantity ] so prices must be
+ * looked up from the database to prevent client-side tampering.
  */
 function getCartTotals(): array {
     $config = wire('config');
+    $pages = wire('pages');
     $cart = getCart();
     $subtotal = 0;
     $itemCount = 0;
 
-    foreach ($cart as $item) {
-        $subtotal += $item['price'] * $item['qty'];
-        $itemCount += $item['qty'];
+    foreach ($cart as $product_id => $quantity) {
+        $product = $pages->get("template=product, id=$product_id");
+        if (!$product->id) continue;
+        $subtotal += $product->product_price * (int) $quantity;
+        $itemCount += (int) $quantity;
     }
 
     $shipping = ($subtotal >= $config->shopFreeShippingThreshold || $subtotal === 0)
