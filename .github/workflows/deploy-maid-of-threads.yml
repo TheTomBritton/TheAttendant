@@ -61,6 +61,18 @@ jobs:
         run: npm run build
 
       # ── Assemble deploy directory ───────────────────────────
+      - name: Locate PW root files
+        run: |
+          PW_ROOT=vendor/processwire/processwire
+          echo "=== PW package root files ==="
+          ls -la $PW_ROOT/ | head -20
+          echo ""
+          echo "=== Looking for index.php ==="
+          find vendor/processwire -name "index.php" -maxdepth 3 2>/dev/null || echo "not found"
+          echo ""
+          echo "=== Looking for htaccess ==="
+          find vendor/processwire -name "*.htaccess*" -o -name "htaccess*" -maxdepth 3 2>/dev/null || echo "not found"
+
       - name: Assemble production files
         run: |
           PW_ROOT=vendor/processwire/processwire
@@ -75,9 +87,22 @@ jobs:
           # Vendor (Composer autoload + Stripe SDK)
           cp -R vendor deploy/vendor
 
-          # Root PW files (from PW package)
-          cp $PW_ROOT/index.php deploy/
-          cp $PW_ROOT/.htaccess deploy/
+          # Root PW files — check multiple locations
+          for f in index.php; do
+            if [ -f "$PW_ROOT/$f" ]; then
+              cp "$PW_ROOT/$f" deploy/
+            elif [ -f "$f" ]; then
+              cp "$f" deploy/
+            else
+              echo "WARNING: $f not found — using project copy"
+              cp "sites/maid-of-threads/deploy-files/$f" deploy/ 2>/dev/null || echo "MISSING: $f"
+            fi
+          done
+
+          # .htaccess — use project copy (PW doesn't ship one in Composer package)
+          cp sites/maid-of-threads/deploy-files/.htaccess deploy/ 2>/dev/null || \
+            cp "$PW_ROOT/htaccess.txt" deploy/.htaccess 2>/dev/null || \
+            echo "WARNING: No .htaccess found — will create one"
 
           # Site config
           cp sites/maid-of-threads/config.php deploy/site/config.php
