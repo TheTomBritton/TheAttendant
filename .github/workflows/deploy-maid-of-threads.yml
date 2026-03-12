@@ -74,11 +74,18 @@ jobs:
 
           # Debug: check key file looks valid (does NOT print the key)
           echo "Key file size: $(wc -c < ~/.ssh/deploy_key) bytes"
-          echo "Key first line: $(head -1 ~/.ssh/deploy_key)"
-          echo "Key last line: $(tail -1 ~/.ssh/deploy_key)"
+          echo "Key line count: $(wc -l < ~/.ssh/deploy_key) lines"
+          head -1 ~/.ssh/deploy_key
+          tail -1 ~/.ssh/deploy_key
 
           # Trust the host key
-          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          echo "Running ssh-keyscan..."
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>&1 || echo "ssh-keyscan returned non-zero (may be OK)"
+          echo "ssh-keyscan done, known_hosts size: $(wc -l < ~/.ssh/known_hosts) lines"
+
+          # Test SSH port connectivity
+          echo "Testing SSH connectivity to $SSH_HOST:22..."
+          timeout 5 bash -c "echo > /dev/tcp/$SSH_HOST/22" 2>&1 && echo "Port 22 open" || echo "Port 22 closed or unreachable"
 
           # Start ssh-agent
           eval $(ssh-agent -s)
@@ -90,7 +97,17 @@ jobs:
           echo "echo \"\$SSH_PASSPHRASE\"" >> /tmp/askpass.sh
           chmod +x /tmp/askpass.sh
 
-          SSH_ASKPASS=/tmp/askpass.sh SSH_ASKPASS_REQUIRE=force ssh-add ~/.ssh/deploy_key
+          echo "Adding key to ssh-agent..."
+          SSH_ASKPASS=/tmp/askpass.sh SSH_ASKPASS_REQUIRE=force ssh-add ~/.ssh/deploy_key 2>&1 || {
+            echo "ssh-add failed. Trying alternative method..."
+            # Try openssl decrypt as fallback
+            openssl rsa -in ~/.ssh/deploy_key -out ~/.ssh/deploy_key_dec -passin "pass:$SSH_PASSPHRASE" 2>&1 || echo "openssl decrypt also failed"
+            if [ -f ~/.ssh/deploy_key_dec ]; then
+              chmod 600 ~/.ssh/deploy_key_dec
+              ssh-add ~/.ssh/deploy_key_dec 2>&1
+              mv ~/.ssh/deploy_key_dec ~/.ssh/deploy_key
+            fi
+          }
           rm -f /tmp/askpass.sh
 
           # Verify key was added
