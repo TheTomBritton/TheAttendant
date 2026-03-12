@@ -89,7 +89,7 @@ if ($get_action === 'badge') {
         echo '<span class="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-brand-600 text-xs font-bold text-white">'
             . $count . '</span>';
     }
-    return;
+    die();
 }
 
 // -----------------------------------------------------------------
@@ -101,7 +101,7 @@ if ($get_action && $config->ajax) {
     if ($get_action === 'count') {
         $totals = getCartTotals();
         echo json_encode(['count' => $totals['count']]);
-        return;
+        die();
     }
 
     // Full cart JSON
@@ -133,7 +133,7 @@ if ($get_action && $config->ajax) {
         'total'    => $totals['total'],
         'count'    => $totals['count'],
     ]);
-    return;
+    die();
 }
 
 // -----------------------------------------------------------------
