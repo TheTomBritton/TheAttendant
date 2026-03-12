@@ -31,9 +31,12 @@
 - [ ] **Enable ProcessRedirects** — Core PW module, just enable in admin. Needed for 301 redirects when replacing existing site.
 - [ ] **Enable ProcessPageClone** — Core PW module, just enable in admin. Makes adding new products faster by cloning existing ones.
 
+## Known Issues
+
+- [ ] **HTMX cart badge infinite loop (PRODUCTION)** — `hx-trigger="load"` on the cart badge causes an infinite request loop to `/cart/?action=badge`. Two code fixes applied in the repo: (1) `die()` in `cart.php` badge/JSON endpoints to prevent `_main.php` from wrapping fragments, (2) `hx-trigger="load once"` in `_main.php`. Loop persists on production — likely the deployed code doesn't match the repo. To debug: check `site/templates/cart.php` and `site/templates/_main.php` on the server via cPanel File Manager. If they don't contain the fixes, cPanel didn't deploy properly. Also check PHP opcache (may be serving stale bytecode).
+
 ## Bugs Fixed
 
-- [x] **HTMX cart badge infinite loop** — `hx-trigger="load"` on the cart badge in `_main.php` caused an infinite request loop when the response contained a full page (which itself included the trigger). Fixed with two-layer defence: (1) `die()` in `cart.php` badge/JSON endpoints to prevent `_main.php` from wrapping fragments, (2) `hx-trigger="load once"` so HTMX never re-fires even if the response is unexpected.
 - [x] **Cart totals broken** — `getCartTotals()` expected `$item['price']` / `$item['qty']` but cart stores `product_id => quantity`. Fixed to look up prices from DB.
 - [x] **Cart count in header broken** — `_init.php` iterated cart items as arrays, but they're integers. Fixed.
 - [x] **Cart AJAX endpoint mismatch** — Alpine store called `?action=count` but cart checked `?json`. Fixed to handle both.
