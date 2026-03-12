@@ -62,6 +62,7 @@ $config->urls->admin = '/your-custom-admin/';
 1. **First deployment — upload everything:**
    ```
    wire/                    ← PW core (from composer install)
+   vendor/                  ← Composer autoload + dependencies (e.g. Stripe SDK)
    site/
    ├── templates/           ← Your template files
    ├── modules/             ← Installed modules
@@ -73,11 +74,14 @@ $config->urls->admin = '/your-custom-admin/';
    .htaccess
    ```
 
+   > **Automated option**: Run `scripts/prepare-deploy.sh` to build assets and assemble a clean `deploy/` directory ready for SFTP upload. It checks for `wire/` and `vendor/` and copies only what's needed.
+
 2. **Subsequent deployments — upload only changed files:**
    ```
    site/templates/          ← Updated template files
    site/assets/dist/        ← Rebuilt CSS/JS
    site/modules/            ← New or updated modules
+   vendor/                  ← If Composer dependencies changed
    ```
 
 **Never re-upload on update:**

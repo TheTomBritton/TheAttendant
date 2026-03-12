@@ -7,7 +7,7 @@ All modules listed here are free and compatible with ProcessWire 3.0.229+ and PH
 ### SeoMaestro
 - **Purpose**: Complete SEO meta tags, Open Graph, Twitter Cards, JSON-LD structured data
 - **Install**: `site/modules/SeoMaestro/`
-- **URL**: https://github.com/daun/SeoMaestro
+- **URL**: https://github.com/wanze/SeoMaestro
 - **Setup**: Creates SEO fieldgroup. Add to all public-facing templates.
 - **Usage**:
   ```php
@@ -17,24 +17,25 @@ All modules listed here are free and compatible with ProcessWire 3.0.229+ and PH
 
 ### MarkupSitemap
 - **Purpose**: Auto-generates XML sitemap at /sitemap.xml
-- **URL**: https://github.com/aberask/MarkupSitemap
+- **URL**: https://github.com/mikerockett/markup-sitemap
 - **Setup**: Install and configure. Exclude admin, 404, and utility templates.
-
-### AllInOneMinify
-- **Purpose**: Combines and minifies CSS/JS files
-- **URL**: https://modules.processwire.com/modules/all-in-one-minify/
-- **Setup**: Configure source files and output paths.
-- **Note**: If using a build tool (Tailwind/Vite), this may be redundant for CSS. Still useful for combining multiple JS files.
 
 ### CronjobDatabaseBackup
 - **Purpose**: Automated database backups on a schedule
-- **URL**: https://modules.processwire.com/modules/cronjob-database-backup/
+- **URL**: https://github.com/kixe/CronjobDatabaseBackup
 - **Setup**: Configure backup frequency and retention.
 
 ### TracyDebugger
 - **Purpose**: Development debug toolbar (disable on production)
 - **URL**: https://github.com/adrianbj/TracyDebugger
 - **Setup**: Install, use `bd()` and `d()` for debugging. **Always disable on production.**
+
+## Conditional (Project-Dependent)
+
+### AllInOneMinify
+- **Purpose**: Combines and minifies CSS/JS files
+- **URL**: https://modules.processwire.com/modules/all-in-one-minify/
+- **When to use**: Only when the project has no build pipeline (no Tailwind/Vite). If using a CSS framework with its own build step, this module is redundant and adds unnecessary complexity.
 
 ## SEO & Analytics
 
@@ -139,6 +140,12 @@ All modules listed here are free and compatible with ProcessWire 3.0.229+ and PH
 ### ProcessPageClone
 - **Purpose**: Clone pages with all their content (core module)
 - **URL**: Ships with ProcessWire (enable it)
+- **Tip**: Especially useful for ecommerce — cloning a product pre-fills all fields.
+
+### ProcessRedirects
+- **Purpose**: Manage 301/302 redirects from the PW admin (core module)
+- **URL**: Ships with ProcessWire (enable it)
+- **Why**: Essential when replacing an existing site or restructuring URLs. No `.htaccess` editing needed.
 
 ### ProcessPagesExportImport
 - **Purpose**: Export and import pages between PW installations

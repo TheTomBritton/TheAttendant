@@ -11,22 +11,34 @@
 
 - [x] **Add product images** — Placeholder images added (featured + 3 gallery per product). Replace with real photography when available.
 - [x] **Add blog post images** — Placeholder featured image on introductory blog post. Replace with real photography when available.
+- [x] **Contact form** — Fully implemented with FrontendForms (primary) and manual fallback. Email uses `replyTo()` for SMTP compatibility.
+- [x] **Security hardening** — Admin URL changed to `/mot-studio/`, HTTPS redirect enabled, security headers added (X-Content-Type-Options, Referrer-Policy, Permissions-Policy).
 - [ ] **Test cart flow** — Add a product to cart, test quantity updates, test checkout redirect (will fail until Stripe keys are configured).
 - [ ] **Add favicon** — Create and add a favicon to `site/assets/dist/` or as a PW field on the homepage.
-- [ ] **Contact form** — The contact template currently only renders a placeholder. Wire up FrontendForms module after installation.
 - [ ] **Visual refinement** — Review all page templates in the browser and adjust styling, spacing, and layout as needed.
 
 ## Priority: Low
 
 - [ ] **Image optimisation** — WebP auto-generation is enabled in config. Test with real product images to verify sizing/quality.
-- [ ] **SEO setup** — After SeoMaestro is installed, configure default meta templates and verify Open Graph tags.
-- [ ] **XML sitemap** — Install MarkupSitemap module and verify `/sitemap.xml` output.
-- [ ] **Email templates** — Configure WireMailSmtp with SMTP credentials for order confirmations and contact form notifications.
-- [ ] **Stripe webhooks** — Set up webhook endpoint for order status updates (payment confirmation, refunds).
+- [ ] **SEO setup** — SeoMaestro is installed but `_main.php` renders `<title>` and `<meta description>` manually. Replace with `$page->seo->render()` to get OG tags, Twitter Cards, and canonical URLs.
+- [ ] **XML sitemap** — MarkupSitemap is installed. Configure template exclusions: exclude `admin`, `blog-rss`, `search`, `cart`, `checkout`, `order-confirmation`. Verify `/sitemap.xml` output.
+- [ ] **Email templates** — Configure WireMailSmtp with Krystal SMTP credentials. Without this, `wireMail()` falls back to PHP `mail()` which may silently fail on shared hosting.
+- [ ] **Stripe webhooks** — Create `stripe-webhook.php` template to handle `checkout.session.completed` events. Essential for production — the success redirect alone is not reliable (customer may close browser). Handles: stock updates, order confirmation emails, refund processing.
 - [ ] **Search functionality** — Test the search template with actual content. May need tweaking for product-specific search.
 - [ ] **RSS feed** — Verify `/blog-rss/` outputs valid XML with blog posts.
-- [ ] **Performance** — Enable ProCache or file caching once content is in place. Review Lighthouse scores.
-- [ ] **Security hardening** — Before going live: change admin URL, set file permissions, review `.htaccess`, disable debug mode.
+- [ ] **Performance** — Enable PW's built-in template caching on static pages (home, about, shop, categories). Do NOT use ProCache (paid Pro module). Review Lighthouse scores.
+- [ ] **Enable ProcessRedirects** — Core PW module, just enable in admin. Needed for 301 redirects when replacing existing site.
+- [ ] **Enable ProcessPageClone** — Core PW module, just enable in admin. Makes adding new products faster by cloning existing ones.
+
+## Bugs Fixed
+
+- [x] **Cart totals broken** — `getCartTotals()` expected `$item['price']` / `$item['qty']` but cart stores `product_id => quantity`. Fixed to look up prices from DB.
+- [x] **Cart count in header broken** — `_init.php` iterated cart items as arrays, but they're integers. Fixed.
+- [x] **Cart AJAX endpoint mismatch** — Alpine store called `?action=count` but cart checked `?json`. Fixed to handle both.
+- [x] **Checkout Stripe URLs broken** — `$input->httpUrl(true)` produced double-path URLs. Fixed to use `$page->httpUrl` / `$confirmation_page->httpUrl`.
+- [x] **Contact form email rejected** — Used visitor's email as `from()` which SMTP servers reject (SPF mismatch). Fixed to use site email as `from()` + visitor as `replyTo()`.
+- [x] **RSS feed broken** — Template requires noPrepend/noAppend but used variables from `_init.php`. Made self-contained.
+- [x] **Newsletter form 404** — Footer form posted to non-existent `/subscribe/`. Replaced with contact page link.
 
 ## Completed
 
@@ -37,12 +49,24 @@
 - [x] **Static page content** — About, Contact, Privacy Policy, Terms & Conditions all populated with realistic content.
 - [x] **Shop category descriptions** — All 4 categories have summary and body text.
 - [x] **Fix field name mismatches** — `product_images` → `product_gallery`, `tags` → `blog_tags` in template files.
+- [x] **Add .com domain** — `httpHosts` updated with both `.co.uk` and `.com` variants.
 
 ## Deployment Checklist
 
-- [ ] Update production database credentials in `config.php`
-- [ ] Update `httpHosts` with production domain
-- [ ] Set `$config->debug = false` for production
-- [ ] Set `$config->https = true` for production
-- [ ] Replace Stripe test keys with live keys
+- [x] Set `$config->debug = false` for production — Environment-aware config already handles this.
+- [x] Set `$config->https = true` for production — Already configured.
+- [x] Update `httpHosts` with production domain — Both `.co.uk` and `.com` set.
+- [x] Change admin URL from default — Set to `/mot-studio/`.
+- [x] Enable HTTPS redirect in `.htaccess` — Section 9A uncommented.
+- [x] Add security headers — X-Content-Type-Options, Referrer-Policy, Permissions-Policy.
+- [ ] Create database on Krystal cPanel and update credentials in `config.php`
+- [ ] Export database from Docker and import to Krystal
+- [ ] Run `composer install --no-dev` and upload `wire/` directory
+- [ ] Run `npm run build` and upload `site/assets/dist/`
+- [ ] Upload site files via SFTP
+- [ ] Replace Stripe test keys with live keys (or set as server env vars)
+- [ ] Configure SMTP credentials in PW admin (WireMailSmtp)
+- [ ] Rename admin directory on server to match `/mot-studio/`
+- [ ] Set file permissions (755 dirs, 644 files, 755 site/assets/)
+- [ ] Test site loads, admin works, forms send, cart functions
 - [ ] Run `/deploy-checklist` for full audit

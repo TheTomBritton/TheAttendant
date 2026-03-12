@@ -55,7 +55,7 @@ echo "</picture>";
 Inline critical above-the-fold CSS in `<head>`:
 ```html
 <style>/* Critical CSS here */</style>
-<link rel="stylesheet" href="/site/templates/assets/dist/app.css" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="/site/assets/dist/app.css" media="print" onload="this.media='all'">
 ```
 
 ### JavaScript Loading
@@ -81,18 +81,15 @@ Inline critical above-the-fold CSS in `<head>`:
 
 ## Caching
 
-### Template Cache
-Enable template caching for pages that don't change often:
-```php
-// In site/config.php or per-template settings
-// Cache time in seconds (3600 = 1 hour)
-$config->templateCache = true;
-```
+### Template Cache (Built-in — No Module Required)
+Enable template caching for pages that don't change often. This is PW's built-in caching — no module needed.
 
-Configure per template in PW admin: Setup > Templates > [template] > Cache tab.
+Configure per template in PW admin: Setup > Templates > [template] > Cache tab. Set cache time in seconds (3600 = 1 hour is a good default for static pages).
 
-**Good candidates for caching**: Homepage, about pages, service pages, blog listings.
-**Don't cache**: Search results, forms, pages with user-specific content.
+**Good candidates for caching**: Homepage, about pages, service pages, blog listings, shop index, product categories.
+**Never cache**: Cart, checkout, order confirmation, search results, forms, pages with user-specific content, RSS feeds.
+
+> **Note**: Do NOT use ProCache — it's a paid Pro module. The built-in template cache is free and sufficient for most sites. For ecommerce, also consider that product pages with stock counts may need shorter cache times or no cache.
 
 ### Browser Caching via .htaccess
 ```apache
@@ -118,9 +115,13 @@ Configure per template in PW admin: Setup > Templates > [template] > Cache tab.
 
 **Important**: Use cache-busting in asset URLs when files change:
 ```php
-$cssVersion = filemtime($config->paths->templates . 'assets/dist/app.css');
-echo "<link rel='stylesheet' href='{$config->urls->templates}assets/dist/app.css?v={$cssVersion}'>";
+// Built assets live in site/assets/dist/, NOT site/templates/assets/dist/
+$cssPath = $config->paths->assets . 'dist/app.css';
+$cssVersion = file_exists($cssPath) ? filemtime($cssPath) : '';
+echo "<link rel='stylesheet' href='{$config->urls->assets}dist/app.css?v={$cssVersion}'>";
 ```
+
+> **Note**: `$config->urls->assets` points to `site/assets/`, while `$config->urls->templates` points to `site/templates/`. The build pipeline outputs to `site/assets/dist/` — always use the `assets` path for built files.
 
 ### GZIP Compression
 ```apache
