@@ -59,31 +59,45 @@ jobs:
         run: npm run build
 
       # ── SSH Setup ───────────────────────────────────────────
+      - name: Install expect
+        run: sudo apt-get install -y -qq expect
+
       - name: Configure SSH
         env:
           SSH_KEY: ${{ secrets.KRYSTAL_SSH_KEY }}
           SSH_PASSPHRASE: ${{ secrets.KRYSTAL_SSH_PASSPHRASE }}
           SSH_HOST: ${{ secrets.KRYSTAL_SSH_HOST }}
+          SSH_USER: ${{ secrets.KRYSTAL_SSH_USER }}
         run: |
           mkdir -p ~/.ssh
 
-          # Write the encrypted private key
-          echo "$SSH_KEY" > ~/.ssh/deploy_key.enc
-          chmod 600 ~/.ssh/deploy_key.enc
-
-          # Decrypt to a passphrase-free key for non-interactive use
-          openssl rsa -in ~/.ssh/deploy_key.enc -out ~/.ssh/deploy_key -passin "pass:$SSH_PASSPHRASE"
+          # Write the key, preserving newlines
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
 
           # Trust the host key
           ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
 
+          # Start ssh-agent and add the key with passphrase via expect
+          eval $(ssh-agent -s)
+          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> "$GITHUB_ENV"
+          echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> "$GITHUB_ENV"
+
+          expect <<EXPECT_SCRIPT
+          spawn ssh-add /home/runner/.ssh/deploy_key
+          expect "Enter passphrase"
+          send "${SSH_PASSPHRASE}\r"
+          expect {
+            "Identity added" { exit 0 }
+            "Bad passphrase" { exit 1 }
+          }
+          EXPECT_SCRIPT
+
           # SSH config for simpler rsync commands
           cat > ~/.ssh/config <<EOF
           Host krystal
             HostName $SSH_HOST
-            User ${{ secrets.KRYSTAL_SSH_USER }}
-            IdentityFile ~/.ssh/deploy_key
+            User $SSH_USER
             StrictHostKeyChecking accept-new
           EOF
           chmod 600 ~/.ssh/config
@@ -145,6 +159,8 @@ jobs:
             chmod -R 755 $DEPLOY_PATH/site/assets/
           "
 
-      - name: Clean up SSH key
+      - name: Clean up SSH
         if: always()
-        run: rm -f ~/.ssh/deploy_key ~/.ssh/deploy_key.enc
+        run: |
+          ssh-agent -k 2>/dev/null || true
+          rm -f ~/.ssh/deploy_key
