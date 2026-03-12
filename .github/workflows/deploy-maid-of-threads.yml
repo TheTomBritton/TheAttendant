@@ -49,12 +49,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: sites/maid-of-threads/package-lock.json
 
       - name: Install Node dependencies
         working-directory: sites/maid-of-threads
-        run: npm ci
+        run: npm install
 
       - name: Build production assets
         working-directory: sites/maid-of-threads
