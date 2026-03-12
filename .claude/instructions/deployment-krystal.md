@@ -2,52 +2,51 @@
 
 ## Overview
 
-Krystal is a UK-based shared hosting provider running Apache with PHP-FPM. Deployment is typically via SFTP, though SSH may be available depending on your plan.
+Krystal is a UK-based shared hosting provider running Apache with PHP-FPM. The primary deployment method is **GitHub Actions CI/CD with cPanel Git Version Control**. SFTP is available as a fallback.
 
 ## Pre-Deployment
 
 Before deploying, run `/deploy-checklist` to ensure everything is ready.
 
-### Build Production Assets
-```bash
-npm run build
-```
-This creates minified CSS (and JS if applicable) in `site/assets/dist/`.
-
-### Update site/config.php for Production
-```php
-<?php namespace ProcessWire;
-
-$config->debug = false;
-$config->advanced = false;
-
-// Database — update with Krystal credentials
-$config->dbHost = 'localhost';
-$config->dbName = 'your_database_name';
-$config->dbUser = 'your_database_user';
-$config->dbPass = 'your_database_password';
-$config->dbPort = '3306';
-$config->dbCharset = 'utf8mb4';
-$config->dbEngine = 'InnoDB';
-
-// URLs
-$config->httpHosts = ['www.yourdomain.com', 'yourdomain.com'];
-$config->https = true;
-
-// Time zone
-$config->timezone = 'Europe/London';
-
-// Session
-$config->sessionFingerprint = true;
-$config->sessionCookieSecure = true;
-
-// Admin URL (changed from default for security)
-$config->urls->admin = '/your-custom-admin/';
-```
-
 ## Deployment Methods
 
-### Method 1: SFTP Upload (Most Common)
+### Method 1: GitHub Actions + cPanel Git (Recommended)
+
+This is the automated CI/CD pipeline used for Maid of Threads and the recommended approach for all projects.
+
+**How it works:**
+1. Push code to the project branch (e.g. `maid-of-threads`)
+2. GitHub Actions workflow triggers, builds everything:
+   - Installs PHP dependencies via Composer (`--no-dev`)
+   - Installs Node dependencies and runs `npm run build`
+   - Assembles a deploy directory with wire/, vendor/, templates, built assets
+   - Strips vendor markdown files (avoids GitHub secret scanning false positives)
+3. Force-pushes the deploy directory to a `deploy/<project>` branch
+4. cPanel Git Version Control detects the update and pulls
+5. `.cpanel.yml` copies files from the repo to the document root
+
+**Key files:**
+- `.github/workflows/deploy-<project>.yml` — GitHub Actions workflow
+- `.cpanel.yml` — cPanel deployment manifest (in repo root)
+- `sites/<project>/deploy-files/` — .htaccess and index.php for deployment
+
+**Initial setup:**
+1. Create the GitHub Actions workflow (see existing `deploy-maid-of-threads.yml` as template)
+2. Create `.cpanel.yml` with copy tasks for your document root path
+3. Create `deploy-files/.htaccess` with PW rewrite rules, HTTPS redirect, security headers
+4. Push to trigger the first build
+5. In Krystal cPanel → Git Version Control:
+   - Create New → paste GitHub repo URL
+   - Set branch to `deploy/<project>`
+   - Set deploy path to the document root
+6. Click "Deploy HEAD Commit"
+
+**Important notes:**
+- `config.php` is **never deployed via CI** — it contains database credentials and auth salts. Upload it manually once via cPanel File Manager to `site/config.php`.
+- `site/assets/files/` (user-uploaded images) is not in the deploy. Upload separately.
+- After a force-push, cPanel may fail to fast-forward. Fix: delete the repo in cPanel Git Version Control and recreate it pointing to the same branch.
+
+### Method 2: SFTP Upload (Fallback)
 
 **Tools**: FileZilla, WinSCP, Cyberduck, or VS Code SFTP extension.
 
@@ -57,78 +56,84 @@ $config->urls->admin = '/your-custom-admin/';
 - Username: your cPanel username
 - Password: your cPanel password
 
-**Upload order:**
+**First deployment — upload everything:**
+```
+wire/                    ← PW core (from composer install)
+vendor/                  ← Composer autoload + dependencies
+site/
+├── templates/           ← Your template files
+├── modules/             ← Installed modules
+├── assets/              ← Will need write permissions
+├── config.php           ← Production config
+├── ready.php
+└── init.php
+index.php
+.htaccess
+```
 
-1. **First deployment — upload everything:**
-   ```
-   wire/                    ← PW core (from composer install)
-   vendor/                  ← Composer autoload + dependencies (e.g. Stripe SDK)
-   site/
-   ├── templates/           ← Your template files
-   ├── modules/             ← Installed modules
-   ├── assets/              ← Will need write permissions
-   ├── config.php           ← Production config
-   ├── ready.php
-   └── init.php
-   index.php
-   .htaccess
-   ```
+> **Automated option**: Run `scripts/prepare-deploy.sh` to build assets and assemble a clean `deploy/` directory ready for SFTP upload.
 
-   > **Automated option**: Run `scripts/prepare-deploy.sh` to build assets and assemble a clean `deploy/` directory ready for SFTP upload. It checks for `wire/` and `vendor/` and copies only what's needed.
-
-2. **Subsequent deployments — upload only changed files:**
-   ```
-   site/templates/          ← Updated template files
-   site/assets/dist/        ← Rebuilt CSS/JS
-   site/modules/            ← New or updated modules
-   vendor/                  ← If Composer dependencies changed
-   ```
+**Subsequent deployments — upload only changed files:**
+```
+site/templates/          ← Updated template files
+site/assets/dist/        ← Rebuilt CSS/JS
+site/modules/            ← New or updated modules
+vendor/                  ← If Composer dependencies changed
+```
 
 **Never re-upload on update:**
 - `site/assets/files/` — contains uploaded content
 - `site/assets/cache/` — will regenerate
 - `site/config.php` — unless config has changed
 
-### Method 2: SSH + Git (If Available)
-
-If your Krystal plan includes SSH access:
+## Build Production Assets
 
 ```bash
-# SSH into server
-ssh username@your-server.krystal.hosting
-
-# Navigate to web root
-cd public_html
-
-# Clone repository (first time)
-git clone https://github.com/yourusername/project-name.git .
-
-# Install PW core
-composer install --no-dev
-
-# Set permissions
-find . -type d -exec chmod 755 {} \;
-find . -type f -exec chmod 644 {} \;
-chmod -R 755 site/assets/
-
-# Pull updates (subsequent deployments)
-git pull origin main
-composer install --no-dev
+# From the project directory (e.g. sites/maid-of-threads/)
+npm run build
 ```
 
-### Method 3: Rsync (If SSH Available)
+This creates minified CSS (and JS if applicable) in `site/assets/dist/`.
 
-```bash
-# From your local machine
-rsync -avz --exclude='.git' \
-    --exclude='node_modules' \
-    --exclude='site/assets/files' \
-    --exclude='site/assets/cache' \
-    --exclude='site/assets/sessions' \
-    --exclude='site/assets/logs' \
-    --exclude='docker' \
-    ./ username@server:~/public_html/
+Note: GitHub Actions handles this automatically — you only need to run this manually for SFTP deployments.
+
+## Production config.php
+
+Use environment-aware detection so one file works for both local and production:
+
+```php
+<?php namespace ProcessWire;
+
+// Detect environment
+$isLocal = in_array($_SERVER['HTTP_HOST'] ?? '', ['localhost', 'localhost:8080', '127.0.0.1']);
+
+if ($isLocal) {
+    $config->debug = true;
+    $config->dbHost = 'db';
+    $config->dbName = 'pw_dev';
+    $config->dbUser = 'pw_user';
+    $config->dbPass = 'pw_password';
+    $config->httpHosts = ['localhost:8080'];
+} else {
+    $config->debug = false;
+    $config->dbHost = 'localhost';
+    $config->dbName = 'your_prod_db';
+    $config->dbUser = 'your_prod_user';
+    $config->dbPass = 'your_prod_password';
+    $config->httpHosts = ['www.yourdomain.com', 'yourdomain.com'];
+    $config->https = true;
+    $config->sessionCookieSecure = true;
+}
+
+// Shared settings
+$config->dbCharset = 'utf8mb4';
+$config->dbEngine = 'InnoDB';
+$config->timezone = 'Europe/London';
+$config->sessionFingerprint = true;
+$config->userAuthSalt = 'your-unique-64-char-salt';
 ```
+
+**Never commit production credentials to git.** The config file stays on the server and is excluded from CI deployment.
 
 ## Database Setup
 
@@ -159,18 +164,11 @@ docker compose exec db mysqldump -u root -p pw_dev > database-export.sql
 3. Import tab > Choose file > Select your SQL export
 4. Execute
 
-**Via SSH (if available):**
-```bash
-mysql -u db_user -p db_name < database-export.sql
-```
-
 ### URL Replacement
 
-If your local dev URL differs from production, update URLs in the database:
+PW handles URL changes automatically based on `$config->httpHosts` — no manual SQL replacement needed in most cases.
 
-**Via PW admin:** After importing, log into the admin. PW handles URL changes automatically based on `$config->httpHosts`.
-
-**If manual replacement needed:**
+If manual replacement is needed:
 ```sql
 UPDATE field_body SET data = REPLACE(data, 'http://localhost:8080', 'https://www.yourdomain.com');
 ```
@@ -180,7 +178,7 @@ UPDATE field_body SET data = REPLACE(data, 'http://localhost:8080', 'https://www
 Krystal provides free Let's Encrypt SSL:
 1. In cPanel, go to **SSL/TLS** or **Let's Encrypt**
 2. Issue a certificate for your domain
-3. Enable "Force HTTPS" in cPanel or via `.htaccess`
+3. HTTPS redirect is handled by `.htaccess` (included in deploy)
 
 ## DNS Configuration
 
@@ -199,39 +197,9 @@ Point your domain to Krystal's nameservers or set A/CNAME records as provided by
 9. Check robots.txt is accessible
 10. Verify sitemap.xml generates correctly
 
-## Environment-Specific Config
+## Krystal-Specific Gotchas
 
-For managing different configs between dev and production, use this pattern in `site/config.php`:
-
-```php
-<?php namespace ProcessWire;
-
-// Detect environment
-$isLocal = in_array($_SERVER['HTTP_HOST'] ?? '', ['localhost', 'localhost:8080', '127.0.0.1']);
-
-if ($isLocal) {
-    // Development settings
-    $config->debug = true;
-    $config->dbHost = 'db';
-    $config->dbName = 'pw_dev';
-    $config->dbUser = 'pw_user';
-    $config->dbPass = 'pw_password';
-    $config->httpHosts = ['localhost:8080'];
-} else {
-    // Production settings
-    $config->debug = false;
-    $config->dbHost = 'localhost';
-    $config->dbName = 'your_prod_db';
-    $config->dbUser = 'your_prod_user';
-    $config->dbPass = 'your_prod_password';
-    $config->httpHosts = ['www.yourdomain.com', 'yourdomain.com'];
-    $config->https = true;
-}
-
-// Shared settings
-$config->dbCharset = 'utf8mb4';
-$config->dbEngine = 'InnoDB';
-$config->timezone = 'Europe/London';
-$config->sessionFingerprint = true;
-$config->userAuthSalt = 'your-unique-64-char-salt';
-```
+- **No external SSH**: Port 22 is blocked from external IPs (e.g. GitHub Actions). Use cPanel Git Version Control instead of SSH/rsync-based deploys.
+- **PHP version**: Defaults may be below 8.2. Set via cPanel → MultiPHP Manager.
+- **cPanel Git force-push**: cPanel cannot fast-forward after a force-push. Delete and recreate the repo in Git Version Control.
+- **GitHub secret scanning**: Stripe SDK and similar packages contain example API keys in their docs. Strip markdown files from vendor before pushing to deploy branches.

@@ -117,7 +117,7 @@ $free_shipping_threshold = isset($config->shopFreeShippingThreshold)
                     <!-- Cart count badge — HTMX fetches HTML fragment on page load -->
                     <span id="cart-badge"
                           hx-get="/cart/?action=badge"
-                          hx-trigger="load"
+                          hx-trigger="load once"
                           hx-swap="innerHTML"></span>
                 </a>
 

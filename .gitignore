@@ -39,6 +39,10 @@ sites/*/assets/dist/
 # Environment files
 /docker/.env
 
+# Production config and database exports (contain credentials)
+**/config-production.php
+database-export.sql
+
 # OS files
 .DS_Store
 Thumbs.db

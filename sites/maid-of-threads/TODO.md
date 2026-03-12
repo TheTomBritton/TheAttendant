@@ -13,6 +13,7 @@
 - [x] **Add blog post images** — Placeholder featured image on introductory blog post. Replace with real photography when available.
 - [x] **Contact form** — Fully implemented with FrontendForms (primary) and manual fallback. Email uses `replyTo()` for SMTP compatibility.
 - [x] **Security hardening** — Admin URL changed to `/mot-studio/`, HTTPS redirect enabled, security headers added (X-Content-Type-Options, Referrer-Policy, Permissions-Policy).
+- [ ] **Upload product/blog images to production** — `site/assets/files/` contains user-uploaded content that isn't deployed via CI. Export from Docker and upload via cPanel File Manager.
 - [ ] **Test cart flow** — Add a product to cart, test quantity updates, test checkout redirect (will fail until Stripe keys are configured).
 - [ ] **Add favicon** — Create and add a favicon to `site/assets/dist/` or as a PW field on the homepage.
 - [ ] **Visual refinement** — Review all page templates in the browser and adjust styling, spacing, and layout as needed.
@@ -32,6 +33,7 @@
 
 ## Bugs Fixed
 
+- [x] **HTMX cart badge infinite loop** — `hx-trigger="load"` on the cart badge in `_main.php` caused an infinite request loop when the response contained a full page (which itself included the trigger). Fixed with two-layer defence: (1) `die()` in `cart.php` badge/JSON endpoints to prevent `_main.php` from wrapping fragments, (2) `hx-trigger="load once"` so HTMX never re-fires even if the response is unexpected.
 - [x] **Cart totals broken** — `getCartTotals()` expected `$item['price']` / `$item['qty']` but cart stores `product_id => quantity`. Fixed to look up prices from DB.
 - [x] **Cart count in header broken** — `_init.php` iterated cart items as arrays, but they're integers. Fixed.
 - [x] **Cart AJAX endpoint mismatch** — Alpine store called `?action=count` but cart checked `?json`. Fixed to handle both.
@@ -51,22 +53,40 @@
 - [x] **Fix field name mismatches** — `product_images` → `product_gallery`, `tags` → `blog_tags` in template files.
 - [x] **Add .com domain** — `httpHosts` updated with both `.co.uk` and `.com` variants.
 
-## Deployment Checklist
+## Deployment (GitHub Actions → cPanel Git)
 
-- [x] Set `$config->debug = false` for production — Environment-aware config already handles this.
+Deployment is automated via GitHub Actions CI/CD. Pushing to the `maid-of-threads` branch triggers:
+
+1. GitHub Actions builds PHP (Composer) + Node (Vite/Tailwind)
+2. Assembles a deploy package (wire/, vendor/, templates, built assets)
+3. Force-pushes to `deploy/maid-of-threads` branch
+4. cPanel Git Version Control pulls from that branch
+5. `.cpanel.yml` copies files to the document root
+
+**Key files**: `.github/workflows/deploy-maid-of-threads.yml`, `.cpanel.yml`
+
+### Completed
+- [x] Set `$config->debug = false` for production — Environment-aware config handles this.
 - [x] Set `$config->https = true` for production — Already configured.
-- [x] Update `httpHosts` with production domain — Both `.co.uk` and `.com` set.
+- [x] Update `httpHosts` with production domain — `.co.uk`, `.com`, and demo subdomain set.
 - [x] Change admin URL from default — Set to `/mot-studio/`.
-- [x] Enable HTTPS redirect in `.htaccess` — Section 9A uncommented.
+- [x] Enable HTTPS redirect in `.htaccess` — Uncommented in deploy copy.
 - [x] Add security headers — X-Content-Type-Options, Referrer-Policy, Permissions-Policy.
-- [ ] Create database on Krystal cPanel and update credentials in `config.php`
-- [ ] Export database from Docker and import to Krystal
-- [ ] Run `composer install --no-dev` and upload `wire/` directory
-- [ ] Run `npm run build` and upload `site/assets/dist/`
-- [ ] Upload site files via SFTP
-- [ ] Replace Stripe test keys with live keys (or set as server env vars)
-- [ ] Configure SMTP credentials in PW admin (WireMailSmtp)
-- [ ] Rename admin directory on server to match `/mot-studio/`
-- [ ] Set file permissions (755 dirs, 644 files, 755 site/assets/)
-- [ ] Test site loads, admin works, forms send, cart functions
-- [ ] Run `/deploy-checklist` for full audit
+- [x] Create database on Krystal cPanel — `tombrit1_maidofthreads` created.
+- [x] Export database from Docker and import to Krystal — Done via phpMyAdmin.
+- [x] GitHub Actions CI/CD pipeline — Builds and deploys automatically on push.
+- [x] cPanel Git Version Control — Configured to pull `deploy/maid-of-threads` branch.
+- [x] Production `config.php` — Manually placed on server (excluded from CI to protect secrets).
+- [x] PHP version set to 8.5 on Krystal — Via MultiPHP Manager.
+
+### Remaining
+- [ ] Upload `site/assets/files/` (product/blog images) — Not deployed via CI, must upload manually.
+- [ ] Replace Stripe test keys with live keys (set as server environment variables).
+- [ ] Configure SMTP credentials in PW admin (WireMailSmtp).
+- [ ] Change production database password (was shared in plaintext).
+- [ ] Test site loads, admin works, forms send, cart functions.
+- [ ] Run `/deploy-checklist` for full audit.
+
+### cPanel Git Notes
+- cPanel cannot fast-forward after a force-push. If deploy fails, delete and recreate the repo in cPanel Git Version Control pointing to `deploy/maid-of-threads`.
+- `config.php` is NOT in the deploy branch — it's managed manually on the server inside `site/config.php`. If you need to update it, use cPanel File Manager.
