@@ -19,13 +19,15 @@ concurrency:
 
 jobs:
   deploy:
-    name: Build & Deploy
+    name: Build & Push Deploy Branch
     runs-on: ubuntu-latest
 
     steps:
       # ── Checkout ────────────────────────────────────────────
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       # ── PHP + Composer ──────────────────────────────────────
       - name: Set up PHP
@@ -58,129 +60,55 @@ jobs:
         working-directory: sites/maid-of-threads
         run: npm run build
 
-      # ── SSH Setup ───────────────────────────────────────────
-      - name: Configure SSH
-        env:
-          SSH_KEY: ${{ secrets.KRYSTAL_SSH_KEY }}
-          SSH_PASSPHRASE: ${{ secrets.KRYSTAL_SSH_PASSPHRASE }}
-          SSH_HOST: ${{ secrets.KRYSTAL_SSH_HOST }}
-          SSH_USER: ${{ secrets.KRYSTAL_SSH_USER }}
+      # ── Assemble deploy directory ───────────────────────────
+      - name: Assemble production files
         run: |
-          mkdir -p ~/.ssh
+          mkdir -p deploy/site/templates
+          mkdir -p deploy/site/assets/dist
+          mkdir -p deploy/site/modules
 
-          # Write the key
-          echo "$SSH_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
+          # PW core (from Composer)
+          cp -R wire deploy/wire
 
-          # Debug: check key file looks valid (does NOT print the key)
-          echo "Key file size: $(wc -c < ~/.ssh/deploy_key) bytes"
-          echo "Key line count: $(wc -l < ~/.ssh/deploy_key) lines"
-          head -1 ~/.ssh/deploy_key
-          tail -1 ~/.ssh/deploy_key
+          # Vendor (Composer autoload + Stripe SDK)
+          cp -R vendor deploy/vendor
 
-          # Trust the host key
-          echo "Running ssh-keyscan..."
-          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>&1 || echo "ssh-keyscan returned non-zero (may be OK)"
-          echo "ssh-keyscan done, known_hosts size: $(wc -l < ~/.ssh/known_hosts) lines"
+          # Root PW files
+          cp index.php deploy/
+          cp .htaccess deploy/
 
-          # Test SSH port connectivity
-          echo "Testing SSH connectivity to $SSH_HOST:22..."
-          timeout 5 bash -c "echo > /dev/tcp/$SSH_HOST/22" 2>&1 && echo "Port 22 open" || echo "Port 22 closed or unreachable"
+          # Site config
+          cp sites/maid-of-threads/config.php deploy/site/config.php
 
-          # Start ssh-agent
-          eval $(ssh-agent -s)
-          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> "$GITHUB_ENV"
-          echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> "$GITHUB_ENV"
+          # Templates
+          cp -R sites/maid-of-threads/templates/* deploy/site/templates/
 
-          # Add key using SSH_ASKPASS (non-interactive passphrase entry)
-          echo '#!/bin/sh' > /tmp/askpass.sh
-          echo "echo \"\$SSH_PASSPHRASE\"" >> /tmp/askpass.sh
-          chmod +x /tmp/askpass.sh
+          # Built assets
+          cp -R sites/maid-of-threads/assets/dist/* deploy/site/assets/dist/
 
-          echo "Adding key to ssh-agent..."
-          SSH_ASKPASS=/tmp/askpass.sh SSH_ASKPASS_REQUIRE=force ssh-add ~/.ssh/deploy_key 2>&1 || {
-            echo "ssh-add failed. Trying alternative method..."
-            # Try openssl decrypt as fallback
-            openssl rsa -in ~/.ssh/deploy_key -out ~/.ssh/deploy_key_dec -passin "pass:$SSH_PASSPHRASE" 2>&1 || echo "openssl decrypt also failed"
-            if [ -f ~/.ssh/deploy_key_dec ]; then
-              chmod 600 ~/.ssh/deploy_key_dec
-              ssh-add ~/.ssh/deploy_key_dec 2>&1
-              mv ~/.ssh/deploy_key_dec ~/.ssh/deploy_key
-            fi
-          }
-          rm -f /tmp/askpass.sh
-
-          # Verify key was added
-          ssh-add -l
-
-          # SSH config for simpler rsync commands
-          cat > ~/.ssh/config <<EOF
-          Host krystal
-            HostName $SSH_HOST
-            User $SSH_USER
-            StrictHostKeyChecking accept-new
-          EOF
-          chmod 600 ~/.ssh/config
-
-      # ── Deploy via rsync ────────────────────────────────────
-      - name: Deploy to Krystal
-        env:
-          DEPLOY_PATH: ${{ secrets.KRYSTAL_DEPLOY_PATH }}
-        run: |
-          # Ensure remote directories exist
-          ssh krystal "mkdir -p $DEPLOY_PATH/site/templates $DEPLOY_PATH/site/assets/dist $DEPLOY_PATH/site/modules"
-
-          # Sync PW core
-          rsync -azq --delete \
-            wire/ \
-            krystal:$DEPLOY_PATH/wire/
-
-          # Sync vendor (Composer autoload + Stripe SDK)
-          rsync -azq --delete \
-            vendor/ \
-            krystal:$DEPLOY_PATH/vendor/
-
-          # Sync templates (from the project overlay)
-          rsync -azq --delete \
-            sites/maid-of-threads/templates/ \
-            krystal:$DEPLOY_PATH/site/templates/
-
-          # Sync built assets
-          rsync -azq --delete \
-            sites/maid-of-threads/assets/dist/ \
-            krystal:$DEPLOY_PATH/site/assets/dist/
-
-          # Sync modules (if any committed)
-          if [ -d "sites/maid-of-threads/modules" ]; then
-            rsync -azq \
-              sites/maid-of-threads/modules/ \
-              krystal:$DEPLOY_PATH/site/modules/
+          # Modules (if any)
+          if [ -d "sites/maid-of-threads/modules" ] && [ "$(ls -A sites/maid-of-threads/modules)" ]; then
+            cp -R sites/maid-of-threads/modules/* deploy/site/modules/
           fi
 
-          # Sync root PW files
-          rsync -azq \
-            index.php \
-            .htaccess \
-            krystal:$DEPLOY_PATH/
+          # .cpanel.yml goes in the repo root
+          cp .cpanel.yml deploy/.cpanel.yml
 
-          # Sync site config
-          rsync -azq \
-            sites/maid-of-threads/config.php \
-            krystal:$DEPLOY_PATH/site/config.php
+          echo "Deploy package assembled:"
+          du -sh deploy/
 
-      # ── Post-deploy ─────────────────────────────────────────
-      - name: Set file permissions
-        env:
-          DEPLOY_PATH: ${{ secrets.KRYSTAL_DEPLOY_PATH }}
+      # ── Push to deploy branch ───────────────────────────────
+      - name: Push to deploy branch
         run: |
-          ssh krystal "
-            find $DEPLOY_PATH -type d -exec chmod 755 {} \;
-            find $DEPLOY_PATH -type f -exec chmod 644 {} \;
-            chmod -R 755 $DEPLOY_PATH/site/assets/
-          "
+          cd deploy
 
-      - name: Clean up SSH
-        if: always()
-        run: |
-          ssh-agent -k 2>/dev/null || true
-          rm -f ~/.ssh/deploy_key
+          git init
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+          git checkout -b deploy/maid-of-threads
+          git add -A
+          git commit -m "Deploy $(date -u '+%Y-%m-%d %H:%M:%S UTC') from ${GITHUB_SHA::8}"
+
+          git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          git push --force origin deploy/maid-of-threads
