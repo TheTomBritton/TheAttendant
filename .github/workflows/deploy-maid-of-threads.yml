@@ -78,6 +78,11 @@ jobs:
           # Vendor (Composer autoload + Stripe SDK)
           cp -R vendor deploy/vendor
 
+          # Strip docs that contain example API keys (triggers GitHub secret scanning)
+          find deploy/vendor -name "*.md" -delete
+          find deploy/vendor -name "CHANGELOG*" -delete
+          find deploy/vendor -name "LICENSE*" -delete
+
           # Root PW files — check multiple locations
           for f in index.php; do
             if [ -f "$PW_ROOT/$f" ]; then
