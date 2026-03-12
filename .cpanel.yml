@@ -9,9 +9,8 @@ deployment:
     # Copy root files
     - /bin/cp index.php $DEPLOYPATH/index.php
     - /bin/cp .htaccess $DEPLOYPATH/.htaccess
-    # Copy site config
+    # Ensure site directory exists (config.php is managed manually on server)
     - /bin/mkdir -p $DEPLOYPATH/site
-    - /bin/cp site/config.php $DEPLOYPATH/site/config.php
     # Copy templates
     - /bin/cp -R site/templates $DEPLOYPATH/site/templates
     # Copy built assets

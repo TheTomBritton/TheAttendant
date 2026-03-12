@@ -95,8 +95,9 @@ jobs:
             cp "$PW_ROOT/htaccess.txt" deploy/.htaccess 2>/dev/null || \
             echo "WARNING: No .htaccess found — will create one"
 
-          # Site config
-          cp sites/maid-of-threads/config.php deploy/site/config.php
+          # NOTE: config.php is NOT deployed automatically — it contains
+          # database credentials and auth salts that differ per environment.
+          # Upload it manually once to the server.
 
           # Templates
           cp -R sites/maid-of-threads/templates/* deploy/site/templates/
