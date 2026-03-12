@@ -59,9 +59,6 @@ jobs:
         run: npm run build
 
       # ── SSH Setup ───────────────────────────────────────────
-      - name: Install expect
-        run: sudo apt-get install -y -qq expect
-
       - name: Configure SSH
         env:
           SSH_KEY: ${{ secrets.KRYSTAL_SSH_KEY }}
@@ -71,27 +68,33 @@ jobs:
         run: |
           mkdir -p ~/.ssh
 
-          # Write the key, preserving newlines
-          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          # Write the key
+          echo "$SSH_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
+
+          # Debug: check key file looks valid (does NOT print the key)
+          echo "Key file size: $(wc -c < ~/.ssh/deploy_key) bytes"
+          echo "Key first line: $(head -1 ~/.ssh/deploy_key)"
+          echo "Key last line: $(tail -1 ~/.ssh/deploy_key)"
 
           # Trust the host key
           ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
 
-          # Start ssh-agent and add the key with passphrase via expect
+          # Start ssh-agent
           eval $(ssh-agent -s)
           echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> "$GITHUB_ENV"
           echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> "$GITHUB_ENV"
 
-          expect <<EXPECT_SCRIPT
-          spawn ssh-add /home/runner/.ssh/deploy_key
-          expect "Enter passphrase"
-          send "${SSH_PASSPHRASE}\r"
-          expect {
-            "Identity added" { exit 0 }
-            "Bad passphrase" { exit 1 }
-          }
-          EXPECT_SCRIPT
+          # Add key using SSH_ASKPASS (non-interactive passphrase entry)
+          echo '#!/bin/sh' > /tmp/askpass.sh
+          echo "echo \"\$SSH_PASSPHRASE\"" >> /tmp/askpass.sh
+          chmod +x /tmp/askpass.sh
+
+          SSH_ASKPASS=/tmp/askpass.sh SSH_ASKPASS_REQUIRE=force ssh-add ~/.ssh/deploy_key
+          rm -f /tmp/askpass.sh
+
+          # Verify key was added
+          ssh-add -l
 
           # SSH config for simpler rsync commands
           cat > ~/.ssh/config <<EOF
