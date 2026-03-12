@@ -110,8 +110,8 @@ jobs:
           # Templates
           cp -R sites/maid-of-threads/templates/* deploy/site/templates/
 
-          # Built assets
-          cp -R sites/maid-of-threads/assets/dist/* deploy/site/assets/dist/
+          # Built assets (Vite outputs to site/assets/dist/ from repo root)
+          cp -R site/assets/dist/* deploy/site/assets/dist/
 
           # Modules (if any)
           if [ -d "sites/maid-of-threads/modules" ] && [ "$(ls -A sites/maid-of-threads/modules)" ]; then
