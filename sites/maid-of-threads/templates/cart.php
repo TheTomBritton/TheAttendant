@@ -83,6 +83,8 @@ if ($input->requestMethod('POST')) {
 $get_action = $sanitizer->text($input->get('action'));
 
 if ($get_action === 'badge') {
+    // Prevent _main.php from wrapping this fragment in the full page layout
+    header('HX-Reswap: innerHTML');
     $totals = getCartTotals();
     $count = (int) $totals['count'];
     if ($count > 0) {

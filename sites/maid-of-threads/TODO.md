@@ -33,7 +33,7 @@
 
 ## Known Issues
 
-- [ ] **HTMX cart badge infinite loop (PRODUCTION)** — `hx-trigger="load"` on the cart badge causes an infinite request loop to `/cart/?action=badge`. Two code fixes applied in the repo: (1) `die()` in `cart.php` badge/JSON endpoints to prevent `_main.php` from wrapping fragments, (2) `hx-trigger="load once"` in `_main.php`. Loop persists on production — likely the deployed code doesn't match the repo. To debug: check `site/templates/cart.php` and `site/templates/_main.php` on the server via cPanel File Manager. If they don't contain the fixes, cPanel didn't deploy properly. Also check PHP opcache (may be serving stale bytecode).
+- [x] **HTMX cart badge infinite loop (PRODUCTION)** — Root cause: `hx-trigger="load"` on the cart badge caused infinite requests. Even `load once` couldn't prevent it because if `_main.php` wrapped the response, each swap introduced a fresh DOM element. **Fix:** replaced HTMX badge loading entirely with a plain `fetch()` call in the inline JS — impossible to loop. Also added `HX-Reswap` header to the badge endpoint as a safety net. Redeploy to production required.
 
 ## Bugs Fixed
 
