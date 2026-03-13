@@ -114,11 +114,8 @@ $free_shipping_threshold = isset($config->shopFreeShippingThreshold)
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
                     </svg>
-                    <!-- Cart count badge — HTMX fetches HTML fragment on page load -->
-                    <span id="cart-badge"
-                          hx-get="/cart/?action=badge"
-                          hx-trigger="load once"
-                          hx-swap="innerHTML"></span>
+                    <!-- Cart count badge — loaded once via fetch (not HTMX, to avoid infinite loop) -->
+                    <span id="cart-badge"></span>
                 </a>
 
                 <!-- Mobile hamburger -->
@@ -490,6 +487,18 @@ $free_shipping_threshold = isset($config->shopFreeShippingThreshold)
                 setTimeout(function() { el.remove(); }, 300);
             }, 5000);
         });
+
+        // ── Cart badge (one-shot fetch, no HTMX) ─────
+        // Using plain fetch instead of HTMX to guarantee no infinite loop.
+        // The old hx-trigger="load" approach could loop when _main.php
+        // accidentally wrapped the badge response in a full page.
+        var badge = document.getElementById('cart-badge');
+        if (badge) {
+            fetch('/cart/?action=badge')
+                .then(function(r) { return r.text(); })
+                .then(function(html) { badge.innerHTML = html; })
+                .catch(function() { /* badge stays empty on error */ });
+        }
     })();
     </script>
 
