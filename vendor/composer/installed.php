@@ -1,0 +1,41 @@
+<?php return array(
+    'root' => array(
+        'name' => 'maid-of-threads/shop',
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'reference' => '575a051ed4cc3b44a1e696d523f0be499a7d1a85',
+        'type' => 'project',
+        'install_path' => __DIR__ . '/../../',
+        'aliases' => array(),
+        'dev' => false,
+    ),
+    'versions' => array(
+        'maid-of-threads/shop' => array(
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => '575a051ed4cc3b44a1e696d523f0be499a7d1a85',
+            'type' => 'project',
+            'install_path' => __DIR__ . '/../../',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'processwire/processwire' => array(
+            'pretty_version' => '3.0.255',
+            'version' => '3.0.255.0',
+            'reference' => '4bf3a6d09cfd2c5d3f8a1c195d768889434ba0b1',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../processwire/processwire',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'stripe/stripe-php' => array(
+            'pretty_version' => 'v13.18.0',
+            'version' => '13.18.0.0',
+            'reference' => '02abb043b103766f4ed920642ae56ffdc58c7467',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../stripe/stripe-php',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+    ),
+);
